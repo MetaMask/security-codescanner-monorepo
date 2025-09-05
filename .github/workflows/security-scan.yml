@@ -1,0 +1,122 @@
+name: 'Security Code Scanner'
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: 'Repository that requested the scan'
+        required: true
+        type: string
+      languages:
+        description: 'JSON array of languages to scan (e.g., ["javascript", "python"])'
+        required: false
+        type: string
+        default: '["javascript"]'
+      paths_ignored:
+        description: 'Comma delimited paths to ignore during scan'
+        required: false
+        type: string
+        default: ''
+      rules_excluded:
+        description: 'Comma delimited IDs of rules to exclude'
+        required: false
+        type: string
+        default: ''
+      project_metrics_token:
+        description: 'Analytics token to log failed builds'
+        required: false
+        type: string
+      slack_webhook:
+        description: 'Slack webhook for notifications'
+        required: false
+        type: string
+
+jobs:
+  # Parse languages and create matrix
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      languages: ${{ steps.parse.outputs.languages }}
+    steps:
+      - name: Parse languages
+        id: parse
+        run: |
+          echo "languages=${{ inputs.languages }}" >> $GITHUB_OUTPUT
+
+  # Run CodeQL analysis for each language in parallel
+  codeql-analysis:
+    needs: setup
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read  
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.setup.outputs.languages) }}
+    
+    steps:
+      - name: Run CodeQL for ${{ matrix.language }}
+        uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-codeql.yml@main
+        with:
+          language: ${{ matrix.language }}
+          repo: ${{ inputs.repo }}
+          paths_ignored: ${{ inputs.paths_ignored }}
+          rules_excluded: ${{ inputs.rules_excluded }}
+
+  # Run Semgrep analysis once (language-agnostic)
+  semgrep-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Run Semgrep Analysis
+        uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-semgrep.yml@main
+        with:
+          repo: ${{ inputs.repo }}
+          paths_ignored: ${{ inputs.paths_ignored }}
+
+  # Collect results and handle notifications
+  finalize:
+    needs: [codeql-analysis, semgrep-analysis]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Determine Overall Scan Success
+        env:
+          CODEQL_RESULT: ${{ needs.codeql-analysis.result }}
+          SEMGREP_RESULT: ${{ needs.semgrep-analysis.result }}
+        run: |
+          if [[ "$CODEQL_RESULT" == "failure" || "$SEMGREP_RESULT" == "failure" ]]; then
+            SCAN_RESULT='failure'
+          else
+            SCAN_RESULT='success'
+          fi
+          echo "SCAN_RESULT=$SCAN_RESULT" >> $GITHUB_ENV
+
+      - name: Post to Slack channel
+        if: ${{ env.SCAN_RESULT == 'failure' && inputs.slack_webhook != '' }}
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
+        with:
+          payload: |
+            {
+              "text": "Security scan failed for ${{ inputs.repo }} - Run: https://github.com/${{ inputs.repo }}/actions/runs/${{ github.run_id }}",
+              "channel": "#security-notifications"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ inputs.slack_webhook }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Log metrics
+        if: ${{ inputs.project_metrics_token != '' }}
+        run: |
+          # TODO: Implement metrics logging
+          echo "Logging scan result: $SCAN_RESULT for repo: ${{ inputs.repo }}"
+
+      - name: Fail if security issues found
+        if: ${{ env.SCAN_RESULT == 'failure' }}
+        run: exit 1

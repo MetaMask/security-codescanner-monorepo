@@ -1,0 +1,22 @@
+{
+  "name": "@witmicko/codeql-action",
+  "version": "1.0.0",
+  "description": "Custom CodeQL analysis action",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier '**/*.json' '**/*.md' '**/*.yml' '**/*.js' --check --ignore-path .gitignore --no-error-on-unmatched-pattern",
+    "lint:fix": "prettier '**/*.json' '**/*.md' '**/*.yml' '**/*.js' --write --ignore-path .gitignore --no-error-on-unmatched-pattern"
+  },
+  "keywords": [],
+  "author": "witmicko",
+  "license": "ISC",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/witmicko/security-scanner-monorepo.git"
+  },
+  "dependencies": {
+    "ejs": "^3.1.10"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@witmicko/semgrep-action",
+  "version": "1.0.0",
+  "description": "Semgrep-based security scanning action",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/witmicko/security-scanner-monorepo.git"
+  },
+  "license": "ISC",
+  "author": "witmicko",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier '**/*.json' '**/*.md' '**/*.yml' --check --ignore-path .gitignore --no-error-on-unmatched-pattern",
+    "lint:fix": "prettier '**/*.json' '**/*.md' '**/*.yml' --write --ignore-path .gitignore --no-error-on-unmatched-pattern"
+  },
+  "keywords": [
+    "security",
+    "semgrep",
+    "github-action"
+  ]
+}

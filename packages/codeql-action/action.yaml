@@ -1,0 +1,71 @@
+name: 'Security Code Scanner - CodeQL'
+description: 'Run custom CodeQL analysis'
+inputs:
+  repo:
+    description: 'Repository that requested the scan' 
+    required: true
+  paths_ignored:
+    description: 'Comma delimited paths to ignore during scan' 
+    required: false
+  rules_excluded:
+    description: 'Comma delimited IDs of rules to exclude' 
+    required: false
+
+runs:
+  using: 'composite' 
+  steps:
+    - name: Extract repository owner and name
+      id: extract-repo-info
+      run: |
+        echo ${{ github.action_path }}
+        IFS='/' read -r _ _ _ _ _ ACTION_REPO_OWNER ACTION_REPO_NAME _ <<< "${{ github.action_path }}"
+        echo "ACTION_REPO_OWNER=$ACTION_REPO_OWNER" >> $GITHUB_ENV
+        echo "ACTION_REPO_NAME=$ACTION_REPO_NAME" >> $GITHUB_ENV
+      shell: bash
+    
+    - name: Check out Codeql-action Git repository
+      id: checkout-codeql-action
+      uses: actions/checkout@v4
+      with:
+        repository: ${{env.ACTION_REPO_OWNER}}/${{ env.ACTION_REPO_NAME }}
+        path: ${{ env.ACTION_REPO_NAME }}
+    
+    - name: Checkout Custom Query Repository
+      id: checkout-custom-query
+      uses: actions/checkout@v4
+      with:
+        repository: witmicko/CodeQL-Queries
+        ref: main
+        path: ${{ github.workspace }}/custom-queries
+
+    - name: Generate Config
+      id: generate-config
+      run: |
+        cd $GITHUB_WORKSPACE/$ACTION_REPO_NAME
+        yarn install --immutable
+        node scripts/generate-config.js
+      shell: bash 
+      env:
+        REPO: ${{inputs.repo}}
+        PATHS_IGNORED: ${{ inputs.paths_ignored}}
+        RULES_EXCLUDED: ${{ inputs.rules_excluded}}
+        
+    - name: Initialize CodeQL  
+      uses: github/codeql-action/init@v3
+      with:
+        config-file: ${{ github.workspace }}/${{ env.ACTION_REPO_NAME }}/codeql-config-generated.yml
+        languages: ${{ steps.generate-config.outputs.languages }}
+        source-root: ${{ inputs.repo }}
+
+    - name: Run CodeQL Analysis
+      id: codeql-analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        upload: false
+        checkout_path: ${{ github.workspace }}/${{ inputs.repo }}
+
+    - name: Upload SARIF file
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ steps.codeql-analysis.outputs.sarif-output }}
+        category: my-analysis-tool

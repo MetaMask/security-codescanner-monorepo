@@ -1,0 +1,13 @@
+# Global ownership
+* @witmicko
+
+# Package-specific ownership
+packages/main-action/ @witmicko
+packages/codeql-action/ @witmicko  
+packages/semgrep-action/ @witmicko
+
+# Workflow ownership
+.github/workflows/ @witmicko
+
+# Shared configurations
+shared/ @witmicko
