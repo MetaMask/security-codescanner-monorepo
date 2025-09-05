@@ -67,21 +67,21 @@ jobs:
         id: release_notes
         run: |
           VERSION="${{ needs.validate-release.outputs.version }}"
-          
+
           # Create release notes
           cat > release_notes.md << EOF
           # Security Code Scanner $VERSION
-          
+
           ## 📦 What's Included
-          
+
           This release includes the following packages:
-          
+
           - **Main Action** (\`packages/main-action/\`) - Security scanner orchestrator
           - **CodeQL Action** (\`packages/codeql-action/\`) - Custom CodeQL analysis
           - **Semgrep Action** (\`packages/semgrep-action/\`) - Pattern-based security analysis
-          
+
           ## 🚀 Usage
-          
+
           \`\`\`yaml
           - name: Security Code Scanner
             uses: witmicko/security-scanner-monorepo/packages/main-action@$VERSION
@@ -89,9 +89,9 @@ jobs:
               repo: \${{ github.repository }}
               slack_webhook: \${{ secrets.APPSEC_BOT_SLACK_WEBHOOK }}
           \`\`\`
-          
+
           ## 🔧 Reusable Workflows
-          
+
           \`\`\`yaml
           jobs:
             security-scan:
@@ -100,11 +100,11 @@ jobs:
                 repo: \${{ github.repository }}
                 languages: '["javascript", "python"]'
           \`\`\`
-          
+
           ## 📋 Full Changelog
-          
+
           EOF
-          
+
           # Add recent commits since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [[ -n "$LAST_TAG" ]]; then
@@ -114,7 +114,7 @@ jobs:
             echo "### Initial Release" >> release_notes.md
             echo "- Complete monorepo setup with all security scanning tools" >> release_notes.md
           fi
-          
+
           echo "" >> release_notes.md
           echo "---" >> release_notes.md
           echo "*Generated automatically by the release workflow*" >> release_notes.md

@@ -1,4 +1,4 @@
-import Mixpanel from "mixpanel";
+import Mixpanel from 'mixpanel';
 
 main().catch((error) => {
   console.error(error);
@@ -6,10 +6,10 @@ main().catch((error) => {
 });
 
 async function main() {
-  const MIXPANEL_PROJECT_TOKEN = process.env.MIXPANEL_PROJECT_TOKEN || "";
-  const CODEQL_SCAN_RESULT = process.env.CODEQL_SCAN_RESULT || "";
-  const RUN_ID = process.env.RUN_ID || "";
-  const RUN_REPO = process.env.RUN_REPO || "";
+  const MIXPANEL_PROJECT_TOKEN = process.env.MIXPANEL_PROJECT_TOKEN || '';
+  const CODEQL_SCAN_RESULT = process.env.CODEQL_SCAN_RESULT || '';
+  const RUN_ID = process.env.RUN_ID || '';
+  const RUN_REPO = process.env.RUN_REPO || '';
 
   // todo: move to diff script
   // const SLACK_WEBHOOK = process.env.SLACK_WEBHOOK || "";

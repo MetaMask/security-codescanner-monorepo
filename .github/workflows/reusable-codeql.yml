@@ -3,8 +3,8 @@ name: 'Reusable CodeQL Analysis'
 on:
   workflow_call:
     inputs:
-      language:
-        description: 'Programming language to scan'
+      languages:
+        description: 'JSON array of programming languages to scan (e.g., ["javascript", "python"])'
         required: true
         type: string
       repo:
@@ -33,10 +33,15 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(inputs.languages) }}
+
     outputs:
       sarif-id: ${{ steps.upload.outputs.sarif-id }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,7 +54,7 @@ jobs:
         uses: witmicko/security-scanner-monorepo/packages/codeql-action@main
         with:
           repo: ${{ inputs.repo }}
-          language: ${{ inputs.language }}
+          language: ${{ matrix.language }}
           paths_ignored: ${{ inputs.paths_ignored }}
           rules_excluded: ${{ inputs.rules_excluded }}
 
@@ -58,4 +63,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.codeql-scan.outputs.sarif-output }}
-          category: codeql-${{ inputs.language }}
+          category: codeql-${{ matrix.language }}

@@ -4,7 +4,6 @@ This repository is home to the GitHub action workflow that will run perform a se
 
 ## Usage
 
-
 ```
 - name: Semgrep Scan
     uses: witmicko/security-scanner-monorepo/packages/semgrep-action@main

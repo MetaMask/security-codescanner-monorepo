@@ -1,14 +1,14 @@
 name: Security Code Scanner - Semgrep
-description: "Runs a Semgrep scan on a repository and uploads the results to GitHub"
+description: 'Runs a Semgrep scan on a repository and uploads the results to GitHub'
 
 inputs:
   paths_ignored:
-    description: "List of paths or patterns to ignore"
+    description: 'List of paths or patterns to ignore'
     required: false
-    default: ""
+    default: ''
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Checkout Repository
       uses: actions/checkout@v4

@@ -4,10 +4,7 @@ const config = {
   singleQuote: true,
   tabWidth: 2,
   trailingComma: 'all',
-  plugins: [
-    'prettier-plugin-packagejson',
-    'prettier-plugin-sh',
-  ],
+  plugins: ['prettier-plugin-packagejson', 'prettier-plugin-sh'],
 };
 
 export default config;

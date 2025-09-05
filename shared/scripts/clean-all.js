@@ -16,15 +16,15 @@ const artifactPaths = [
   '.nyc_output',
   'coverage',
   '*.log',
-  '*.sarif'
+  '*.sarif',
 ];
 
 function cleanDirectory(dirPath, patterns) {
   console.log(`🧹 Cleaning: ${dirPath}`);
-  
-  patterns.forEach(pattern => {
+
+  patterns.forEach((pattern) => {
     const fullPath = join(dirPath, pattern);
-    
+
     if (pattern.includes('*')) {
       // Handle glob patterns
       try {
@@ -48,24 +48,24 @@ function cleanDirectory(dirPath, patterns) {
 
 function main() {
   console.log('🚀 Cleaning build artifacts across all packages...');
-  
+
   // Clean root directory
   cleanDirectory('.', artifactPaths);
-  
+
   // Clean packages
   try {
     execSync('ls packages/', { stdio: 'pipe' })
       .toString()
       .trim()
       .split('\n')
-      .forEach(packageName => {
+      .forEach((packageName) => {
         const packagePath = join('packages', packageName);
         cleanDirectory(packagePath, artifactPaths);
       });
   } catch (error) {
     console.error('❌ Error cleaning packages:', error.message);
   }
-  
+
   console.log('\n✨ Clean complete!');
 }
 

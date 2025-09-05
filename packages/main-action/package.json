@@ -1,6 +1,7 @@
 {
   "name": "@witmicko/main-action",
   "version": "1.1.0",
+  "private": true,
   "description": "Main security code scanner orchestrator",
   "keywords": [],
   "repository": {
@@ -22,7 +23,6 @@
     "mixpanel": "^0.18.0"
   },
   "packageManager": "yarn@4.7.0",
-  "private": true,
   "lavamoat": {
     "allowScripts": {
       "@lavamoat/preinstall-always-fail": false

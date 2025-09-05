@@ -46,39 +46,23 @@ jobs:
   # Run CodeQL analysis for each language in parallel
   codeql-analysis:
     needs: setup
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read  
-      security-events: write
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ${{ fromJSON(needs.setup.outputs.languages) }}
-    
-    steps:
-      - name: Run CodeQL for ${{ matrix.language }}
-        uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-codeql.yml@main
-        with:
-          language: ${{ matrix.language }}
-          repo: ${{ inputs.repo }}
-          paths_ignored: ${{ inputs.paths_ignored }}
-          rules_excluded: ${{ inputs.rules_excluded }}
+    uses: ./.github/workflows/reusable-codeql.yml
+    with:
+      languages: ${{ needs.setup.outputs.languages }}
+      repo: ${{ inputs.repo }}
+      paths_ignored: ${{ inputs.paths_ignored }}
+      rules_excluded: ${{ inputs.rules_excluded }}
 
   # Run Semgrep analysis once (language-agnostic)
   semgrep-analysis:
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/reusable-semgrep.yml
     permissions:
       actions: read
       contents: read
       security-events: write
-    
-    steps:
-      - name: Run Semgrep Analysis
-        uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-semgrep.yml@main
-        with:
-          repo: ${{ inputs.repo }}
-          paths_ignored: ${{ inputs.paths_ignored }}
+    with:
+      repo: ${{ inputs.repo }}
+      paths_ignored: ${{ inputs.paths_ignored }}
 
   # Collect results and handle notifications
   finalize:

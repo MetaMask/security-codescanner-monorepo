@@ -13,7 +13,7 @@ jobs:
     uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ github.repository }}
-      languages: '["javascript", "typescript", "python"]'  # Adjust based on your repo
+      languages: '["javascript", "typescript", "python"]' # Adjust based on your repo
       paths_ignored: |
         .storybook/
         '**/__snapshots__/'

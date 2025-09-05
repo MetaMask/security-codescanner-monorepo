@@ -131,7 +131,7 @@ jobs:
           echo "| Test Packages | ${{ needs.test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Integration Test | ${{ needs.integration-test.result == 'success' && '✅' || '❌' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          
+
           if [[ "${{ needs.lint.result }}" == "success" && "${{ needs.validate.result }}" == "success" && "${{ needs.test.result }}" == "success" && "${{ needs.integration-test.result }}" == "success" ]]; then
             echo "🎉 **All checks passed!** The monorepo is ready for deployment." >> $GITHUB_STEP_SUMMARY
           else

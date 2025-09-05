@@ -1,8 +1,8 @@
 {
   "name": "@witmicko/security-scanner-monorepo",
   "version": "1.0.0",
-  "description": "Security Code Scanner - Monorepo",
   "private": true,
+  "description": "Security Code Scanner - Monorepo",
   "repository": {
     "type": "git",
     "url": "https://github.com/witmicko/security-scanner-monorepo.git"
@@ -15,15 +15,15 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach -A run build",
-    "lint": "yarn lint:misc --check && yarn lint:dependencies --check",
-    "lint:fix": "yarn lint:misc --write && yarn lint:dependencies",
-    "lint:misc": "prettier '**/*.json' '**/*.md' '**/*.yml' '**/*.js' '**/*.ts' '!.yarnrc.yml' --ignore-path .gitignore --no-error-on-unmatched-pattern",
-    "lint:dependencies": "depcheck && yarn dedupe",
-    "test": "yarn workspaces foreach -A run test",
-    "clean": "yarn workspaces foreach -A run clean && node shared/scripts/clean-all.js",
     "check": "node shared/scripts/check-packages.js",
-    "validate": "node shared/scripts/validate-actions.js",
-    "install:all": "yarn install --immutable"
+    "clean": "yarn workspaces foreach -A run clean && node shared/scripts/clean-all.js",
+    "install:all": "yarn install --immutable",
+    "lint": "yarn lint:misc --check && yarn lint:dependencies --check",
+    "lint:dependencies": "depcheck && yarn dedupe",
+    "lint:fix": "yarn lint:misc --write && yarn lint:dependencies",
+    "lint:misc": "prettier '**/*.json' '**/*.md' '**/*.yml' '**/*.js' '**/*.ts' '!.yarnrc.yml' '!**/codeql-template.yml' '!**/rule.template.*' --ignore-path .gitignore --no-error-on-unmatched-pattern",
+    "test": "yarn workspaces foreach -A run test",
+    "validate": "node shared/scripts/validate-actions.js"
   },
   "devDependencies": {
     "@lavamoat/allow-scripts": "^3.3.1",
