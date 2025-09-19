@@ -22,7 +22,7 @@ jobs:
         '**/*.test.js*'
         '**/*.test.ts*'
         '**/fixtures/'
-        '**/mocks/'
+        '**/mocks/  '
         '**/test*/'
         docs/
         node_modules
