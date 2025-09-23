@@ -22,13 +22,16 @@ on:
         required: false
         type: string
         default: ''
-    secrets:
       project_metrics_token:
         description: 'Analytics token to log failed builds'
         required: false
+        type: string
+        default: ''
       slack_webhook:
         description: 'Slack webhook for notifications'
         required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       repo:
@@ -155,7 +158,7 @@ jobs:
           echo "SCAN_RESULT=$SCAN_RESULT" >> $GITHUB_ENV
 
       - name: Post to Slack channel
-        if: ${{ env.SCAN_RESULT == 'failure' && secrets.slack_webhook != '' }}
+        if: ${{ env.SCAN_RESULT == 'failure' && inputs.slack_webhook != '' }}
         uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
         with:
           payload: |
@@ -164,11 +167,11 @@ jobs:
               "channel": "#security-notifications"
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook }}
+          SLACK_WEBHOOK_URL: ${{ inputs.slack_webhook }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Log metrics
-        if: ${{ secrets.project_metrics_token != '' }}
+        if: ${{ inputs.project_metrics_token != '' }}
         run: |
           # TODO: Implement metrics logging
           echo "Logging scan result: $SCAN_RESULT for repo: ${{ inputs.repo }}"
