@@ -51,7 +51,7 @@ jobs:
 
       - name: Call Security Code Scanner CodeQL Action
         id: codeql-scan
-        uses: witmicko/security-scanner-monorepo/packages/codeql-action@main
+        uses: ./packages/codeql-action@main
         with:
           repo: ${{ inputs.repo }}
           language: ${{ matrix.language }}

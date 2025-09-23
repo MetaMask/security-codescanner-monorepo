@@ -37,7 +37,7 @@ jobs:
 
       - name: Call Security Code Scanner Semgrep Action
         id: semgrep-scan
-        uses: witmicko/security-scanner-monorepo/packages/semgrep-action@main
+        uses: ./packages/semgrep-action
         with:
           paths_ignored: ${{ inputs.paths_ignored }}
 

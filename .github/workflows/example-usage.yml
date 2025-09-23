@@ -10,7 +10,7 @@ on:
 
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@main
+    uses: ./.github/workflows/security-scan.yml
     with:
       repo: ${{ github.repository }}
       languages: '["javascript", "typescript", "python"]' # Adjust based on your repo
@@ -29,6 +29,7 @@ jobs:
       rules_excluded: |
         rule1
         rule2
+    secrets:
       project_metrics_token: ${{ secrets.SECURITY_SCAN_METRICS_TOKEN }}
       slack_webhook: ${{ secrets.APPSEC_BOT_SLACK_WEBHOOK }}
     permissions:

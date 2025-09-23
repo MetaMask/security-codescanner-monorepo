@@ -1,0 +1,9 @@
+{
+  "action": "workflow_call",
+  "inputs": {
+    "repo": "Consensys/linea-monorepo",
+    "languages": "",
+    "paths_ignored": "node_modules,dist",
+    "rules_excluded": ""
+  }
+}

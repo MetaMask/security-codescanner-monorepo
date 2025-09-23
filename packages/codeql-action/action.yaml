@@ -2,13 +2,16 @@ name: 'Security Code Scanner - CodeQL'
 description: 'Run custom CodeQL analysis'
 inputs:
   repo:
-    description: 'Repository that requested the scan' 
+    description: 'Repository that requested the scan'
+    required: true
+  language:
+    description: 'Programming language to analyze'
     required: true
   paths_ignored:
-    description: 'Comma delimited paths to ignore during scan' 
+    description: 'Comma delimited paths to ignore during scan'
     required: false
   rules_excluded:
-    description: 'Comma delimited IDs of rules to exclude' 
+    description: 'Comma delimited IDs of rules to exclude'
     required: false
 
 runs:
@@ -47,6 +50,7 @@ runs:
       shell: bash 
       env:
         REPO: ${{inputs.repo}}
+        LANGUAGE: ${{ inputs.language }}
         PATHS_IGNORED: ${{ inputs.paths_ignored}}
         RULES_EXCLUDED: ${{ inputs.rules_excluded}}
         
@@ -54,7 +58,7 @@ runs:
       uses: github/codeql-action/init@v3
       with:
         config-file: ${{ github.workspace }}/${{ env.ACTION_REPO_NAME }}/codeql-config-generated.yml
-        languages: ${{ steps.generate-config.outputs.languages }}
+        languages: ${{ inputs.language }}
         source-root: ${{ inputs.repo }}
 
     - name: Run CodeQL Analysis
@@ -68,4 +72,4 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: ${{ steps.codeql-analysis.outputs.sarif-output }}
-        category: my-analysis-tool
+        category: codeql-${{ inputs.language }}

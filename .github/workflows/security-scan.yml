@@ -8,10 +8,10 @@ on:
         required: true
         type: string
       languages:
-        description: 'JSON array of languages to scan (e.g., ["javascript", "python"])'
+        description: 'JSON array of languages to scan (e.g., ["javascript", "python"]) - leave empty for auto-detection'
         required: false
         type: string
-        default: '["javascript"]'
+        default: ''
       paths_ignored:
         description: 'Comma delimited paths to ignore during scan'
         required: false
@@ -32,50 +32,69 @@ on:
         type: string
 
 jobs:
-  # Parse languages and create matrix
+  # Detect languages and create matrix
   setup:
     runs-on: ubuntu-latest
     outputs:
-      languages: ${{ steps.parse.outputs.languages }}
+      languages: ${{ steps.detect-languages.outputs.languages }}
+      matrix: ${{ steps.detect-languages.outputs.matrix }}
     steps:
-      - name: Parse languages
-        id: parse
-        run: |
-          echo "languages=${{ inputs.languages }}" >> $GITHUB_OUTPUT
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          path: ${{ inputs.repo }}
 
-  # Run CodeQL analysis for each language in parallel
-  codeql-analysis:
+      - name: Detect languages and create matrix
+        id: detect-languages
+        uses: ./packages/language-detector
+        with:
+          repo: ${{ inputs.repo }}
+
+  # Run security analysis with dynamic matrix
+  security-analysis:
     needs: setup
-    uses: ./.github/workflows/reusable-codeql.yml
-    with:
-      languages: ${{ needs.setup.outputs.languages }}
-      repo: ${{ inputs.repo }}
-      paths_ignored: ${{ inputs.paths_ignored }}
-      rules_excluded: ${{ inputs.rules_excluded }}
-
-  # Run Semgrep analysis once (language-agnostic)
-  semgrep-analysis:
-    uses: ./.github/workflows/reusable-semgrep.yml
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
-    with:
-      repo: ${{ inputs.repo }}
-      paths_ignored: ${{ inputs.paths_ignored }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          path: ${{ inputs.repo }}
+
+      - name: Run CodeQL Analysis
+        if: ${{ matrix.scanner == 'codeql' }}
+        uses: ./packages/codeql-action
+        with:
+          repo: ${{ inputs.repo }}
+          language: ${{ matrix.language }}
+          paths_ignored: ${{ inputs.paths_ignored }}
+          rules_excluded: ${{ inputs.rules_excluded }}
+
+      - name: Run Semgrep Analysis
+        if: ${{ matrix.scanner == 'semgrep' }}
+        uses: ./packages/semgrep-action
+        with:
+          paths_ignored: ${{ inputs.paths_ignored }}
 
   # Collect results and handle notifications
   finalize:
-    needs: [codeql-analysis, semgrep-analysis]
+    needs: [security-analysis]
     runs-on: ubuntu-latest
     if: always()
     steps:
       - name: Determine Overall Scan Success
         env:
-          CODEQL_RESULT: ${{ needs.codeql-analysis.result }}
-          SEMGREP_RESULT: ${{ needs.semgrep-analysis.result }}
+          SECURITY_ANALYSIS_RESULT: ${{ needs.security-analysis.result }}
         run: |
-          if [[ "$CODEQL_RESULT" == "failure" || "$SEMGREP_RESULT" == "failure" ]]; then
+          if [[ "$SECURITY_ANALYSIS_RESULT" == "failure" ]]; then
             SCAN_RESULT='failure'
           else
             SCAN_RESULT='success'

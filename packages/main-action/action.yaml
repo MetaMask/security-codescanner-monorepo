@@ -54,7 +54,7 @@ runs:
     - name: CodeQL Scan
       id: codeql-scan
       continue-on-error: true
-      uses: witmicko/security-scanner-monorepo/packages/codeql-action@main
+      uses: ./packages/codeql-action
       with:
         repo: ${{ inputs.repo }}
         paths_ignored: ${{ inputs.paths_ignored }}
@@ -63,7 +63,7 @@ runs:
     - name: Semgrep Scan
       id: semgrep-scan
       continue-on-error: true
-      uses: witmicko/security-scanner-monorepo/packages/semgrep-action@main
+      uses: ./packages/semgrep-action
       with:
         paths_ignored: ${{ inputs.paths_ignored }}
 
