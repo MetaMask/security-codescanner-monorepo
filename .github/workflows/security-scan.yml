@@ -69,7 +69,10 @@ jobs:
       languages: ${{ steps.detect-languages.outputs.languages }}
       matrix: ${{ steps.detect-languages.outputs.matrix }}
     steps:
-      - name: Checkout repository
+      - name: Checkout monorepo (for local actions)
+        uses: actions/checkout@v4
+
+      - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo }}
@@ -93,7 +96,10 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - name: Checkout repository
+      - name: Checkout monorepo (for local actions)
+        uses: actions/checkout@v4
+
+      - name: Checkout target repository
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.repo }}
