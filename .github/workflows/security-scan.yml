@@ -36,7 +36,7 @@ on:
         description: 'Repository that requested the scan'
         required: true
         type: string
-        default: 'Consensys/linea-monorepo'
+        default: 'witmicko/security-code-scanner-monorepo'
       languages:
         description: 'JSON array of languages to scan (e.g., ["javascript", "python"]) - leave empty for auto-detection'
         required: false
@@ -84,9 +84,10 @@ jobs:
         with:
           repo: ${{ inputs.repo }}
 
-  # Run security analysis with dynamic matrix
-  security-analysis:
+  # Run CodeQL analysis for each detected language
+  codeql-analysis:
     needs: setup
+    if: ${{ fromJSON(needs.setup.outputs.matrix).include[0] != null }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
@@ -106,7 +107,6 @@ jobs:
           path: ${{ inputs.repo }}
 
       - name: Run CodeQL Analysis
-        if: ${{ matrix.scanner == 'codeql' }}
         uses: ./packages/codeql-action
         with:
           repo: ${{ inputs.repo }}
@@ -114,23 +114,41 @@ jobs:
           paths_ignored: ${{ inputs.paths_ignored }}
           rules_excluded: ${{ inputs.rules_excluded }}
 
+  # Run Semgrep analysis once for all languages
+  semgrep-analysis:
+    needs: setup
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout monorepo (for local actions)
+        uses: actions/checkout@v4
+
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo }}
+          path: ${{ inputs.repo }}
+
       - name: Run Semgrep Analysis
-        if: ${{ matrix.scanner == 'semgrep' }}
         uses: ./packages/semgrep-action
         with:
           paths_ignored: ${{ inputs.paths_ignored }}
 
   # Collect results and handle notifications
   finalize:
-    needs: [security-analysis]
-    runs-on: ubuntu-latest
+    needs: [codeql-analysis, semgrep-analysis]
     if: always()
+    runs-on: ubuntu-latest
     steps:
       - name: Determine Overall Scan Success
         env:
-          SECURITY_ANALYSIS_RESULT: ${{ needs.security-analysis.result }}
+          CODEQL_RESULT: ${{ needs.codeql-analysis.result }}
+          SEMGREP_RESULT: ${{ needs.semgrep-analysis.result }}
         run: |
-          if [[ "$SECURITY_ANALYSIS_RESULT" == "failure" ]]; then
+          if [[ "$CODEQL_RESULT" == "failure" || "$SEMGREP_RESULT" == "failure" ]]; then
             SCAN_RESULT='failure'
           else
             SCAN_RESULT='success'

@@ -15,24 +15,8 @@ inputs:
     required: false
 
 runs:
-  using: 'composite' 
+  using: 'composite'
   steps:
-    - name: Extract repository owner and name
-      id: extract-repo-info
-      run: |
-        echo ${{ github.action_path }}
-        IFS='/' read -r _ _ _ _ _ ACTION_REPO_OWNER ACTION_REPO_NAME _ <<< "${{ github.action_path }}"
-        echo "ACTION_REPO_OWNER=$ACTION_REPO_OWNER" >> $GITHUB_ENV
-        echo "ACTION_REPO_NAME=$ACTION_REPO_NAME" >> $GITHUB_ENV
-      shell: bash
-    
-    - name: Check out Codeql-action Git repository
-      id: checkout-codeql-action
-      uses: actions/checkout@v4
-      with:
-        repository: ${{env.ACTION_REPO_OWNER}}/${{ env.ACTION_REPO_NAME }}
-        path: ${{ env.ACTION_REPO_NAME }}
-    
     - name: Checkout Custom Query Repository
       id: checkout-custom-query
       uses: actions/checkout@v4
@@ -44,10 +28,10 @@ runs:
     - name: Generate Config
       id: generate-config
       run: |
-        cd $GITHUB_WORKSPACE/$ACTION_REPO_NAME
+        cd ${{ github.action_path }}
         yarn install --immutable
         node scripts/generate-config.js
-      shell: bash 
+      shell: bash
       env:
         REPO: ${{inputs.repo}}
         LANGUAGE: ${{ inputs.language }}
@@ -57,7 +41,7 @@ runs:
     - name: Initialize CodeQL  
       uses: github/codeql-action/init@v3
       with:
-        config-file: ${{ github.workspace }}/${{ env.ACTION_REPO_NAME }}/codeql-config-generated.yml
+        config-file: ${{ github.action_path }}/codeql-config-generated.yml
         languages: ${{ inputs.language }}
         source-root: ${{ inputs.repo }}
 

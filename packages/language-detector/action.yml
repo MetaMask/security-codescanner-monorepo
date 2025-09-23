@@ -132,8 +132,7 @@ runs:
           esac
         done <<< "$languages"
 
-        # Always include semgrep (language-agnostic)
-        matrix_includes+=('{"language":"*","scanner":"semgrep"}')
+        
 
         # Build final matrix
         printf -v matrix_str '%s,' "${matrix_includes[@]}"
