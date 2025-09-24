@@ -32,8 +32,9 @@ runs:
     - name: Generate Config
       id: generate-config
       run: |
-        cd ${{ github.action_path }}
+        # Install from workspace root to handle allow-scripts
         yarn install --immutable
+        cd ${{ github.action_path }}
         node scripts/generate-config.js
       shell: bash
       env:
