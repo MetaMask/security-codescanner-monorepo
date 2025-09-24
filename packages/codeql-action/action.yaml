@@ -25,6 +25,10 @@ runs:
         ref: main
         path: ${{ github.workspace }}/custom-queries
 
+    - name: Enable Corepack
+      run: corepack enable
+      shell: bash
+
     - name: Generate Config
       id: generate-config
       run: |
