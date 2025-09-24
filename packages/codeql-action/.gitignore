@@ -7,3 +7,5 @@ package-lock.json
 codeql-config-generated.yml
 github_output
 .env.test
+.yarn/cache
+.yarn/install-state.gz
