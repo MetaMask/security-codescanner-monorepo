@@ -21,7 +21,7 @@ runs:
       id: checkout-custom-query
       uses: actions/checkout@v4
       with:
-        repository: witmicko/CodeQL-Queries
+        repository: metamask/CodeQL-Queries
         ref: main
         path: ${{ github.workspace }}/custom-queries
 
