@@ -25,7 +25,7 @@ const loadConfig = (repo) => {
   const repoConfigPath = path.join('./repo-configs/' + repoName + '.js');
   if (!fs.existsSync(repoConfigPath)) {
     console.warn(`No config found for "${repo}", using default config`);
-    return require('../repo-configs/default');
+    return require('../repo-configs/default.cjs');
   }
   const config = require(path.join('..', repoConfigPath));
   return config;

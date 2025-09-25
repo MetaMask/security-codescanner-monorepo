@@ -32,11 +32,17 @@ runs:
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "/repos/$REPO/languages" 2>/dev/null || echo "{}")
 
-        echo "GitHub API response: $api_response"
+        echo "=== GITHUB API RESPONSE ==="
+        echo "Raw API response: $api_response"
+        echo "==========================="
 
-        # Show detected GitHub languages
+        # Show detected GitHub languages with byte counts
+        echo "GitHub languages with byte counts:"
+        echo "$api_response" | jq -r 'to_entries[] | "\(.key): \(.value) bytes"' 2>/dev/null || echo "Failed to parse JSON response"
+
+        # Show just the language names
         detected_github_langs=$(echo "$api_response" | jq -r 'keys[]' 2>/dev/null || echo "none")
-        echo "GitHub detected languages: $detected_github_langs"
+        echo "GitHub detected language names: $detected_github_langs"
 
         # Initialize language array
         languages=()
@@ -63,12 +69,12 @@ runs:
           languages+=("go")
         fi
 
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "java"; then
+        if echo "$api_response" | jq -r 'keys[]' | grep -qiw "java"; then
           echo "✓ Found Java - adding to scanner list"
           languages+=("java")
         fi
 
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "c\+\+|c"; then
+        if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "^c\+\+$|^c$"; then
           echo "✓ Found C/C++ - adding to scanner list as 'cpp'"
           languages+=("cpp")
         fi
@@ -136,7 +142,7 @@ runs:
               matrix_includes+=('{"language":"go","scanner":"codeql"}')
               ;;
             "java")
-              matrix_includes+=('{"language":"java","scanner":"codeql"}')
+              matrix_includes+=('{"language":"java","scanner":"codeql","build_mode":"manual"}')
               ;;
             "cpp")
               matrix_includes+=('{"language":"cpp","scanner":"codeql"}')

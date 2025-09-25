@@ -13,6 +13,13 @@ inputs:
   rules_excluded:
     description: 'Comma delimited IDs of rules to exclude'
     required: false
+  build_mode:
+    description: 'Build mode for the language'
+    required: false
+  build_command:
+    description: 'Build command for the language'
+    required: false
+    default: null
 
 runs:
   using: 'composite'
@@ -29,13 +36,32 @@ runs:
       run: corepack enable
       shell: bash
 
+    - name: Set up JDK 21 for Java/Kotlin
+      if: ${{ inputs.language == 'java-kotlin' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Copy CodeQL Action Files to Workspace Root
+      run: |
+        echo "Copying CodeQL action files to workspace root for flat structure..."
+        cp -r ${{ github.action_path }}/query-suites ${{ github.workspace }}/
+        cp -r ${{ github.action_path }}/repo-configs ${{ github.workspace }}/
+        cp -r ${{ github.action_path }}/config ${{ github.workspace }}/
+        cp -r ${{ github.action_path }}/scripts ${{ github.workspace }}/
+        echo "Files copied. Workspace structure:"
+        ls -la ${{ github.workspace }}/
+      shell: bash
+
     - name: Generate Config
       id: generate-config
       run: |
         # Install from workspace root to handle allow-scripts
         yarn install --immutable
-        cd ${{ github.action_path }}
-        node scripts/generate-config.js
+        # Run from workspace root where files are copied
+        cd ${{ github.workspace }}
+        node scripts/generate-config.cjs
       shell: bash
       env:
         REPO: ${{inputs.repo}}
@@ -43,12 +69,19 @@ runs:
         PATHS_IGNORED: ${{ inputs.paths_ignored}}
         RULES_EXCLUDED: ${{ inputs.rules_excluded}}
         
-    - name: Initialize CodeQL  
+    - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        config-file: ${{ github.action_path }}/codeql-config-generated.yml
+        config-file: ${{ github.workspace }}/codeql-config-generated.yml
         languages: ${{ inputs.language }}
         source-root: ${{ inputs.repo }}
+
+    - name: Build code
+      if: ${{ inputs.build_mode == 'manual' && inputs.build_command != null }}
+      run: |
+        cd ${{ github.workspace }}/${{ inputs.repo }}
+        ${{ inputs.build_command }}
+      shell: bash
 
     - name: Run CodeQL Analysis
       id: codeql-analysis
