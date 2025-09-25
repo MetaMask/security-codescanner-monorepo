@@ -2,7 +2,7 @@ name: "Security Code Scanner CodeQL Config"
 
 paths-ignore:
 <% pathsIgnored.forEach(function(path) { -%>
-  - <%- path %>
+  - "<%- path %>"
 <% }); -%>
 
 queries:
