@@ -5,11 +5,11 @@ const config = {
   queries: [
     {
       name: 'Security-extended queries for JavaScript',
-      uses: '../packages/codeql-action/query-suites/base.qls',
+      uses: './query-suites/base.qls',
     },
     {
       name: 'Security Code Scanner Custom Queries',
-      uses: '../custom-queries/query-suites/custom-queries.qls',
+      uses: '../../custom-queries/query-suites/custom-queries.qls',
     },
   ],
 };

@@ -48,7 +48,8 @@ const processedQueries = config.queries.map(query => {
 
   // If path is relative, convert to absolute path
   if (!path.isAbsolute(processedUses)) {
-    // Resolve relative to the current working directory (monorepo root)
+    // Resolve relative to the monorepo root (current working directory in GitHub Actions)
+    // The script runs from packages/codeql-action but paths are relative to monorepo root
     processedUses = path.resolve(process.cwd(), processedUses);
   }
 
