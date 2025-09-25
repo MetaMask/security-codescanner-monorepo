@@ -142,7 +142,7 @@ runs:
               matrix_includes+=('{"language":"go","scanner":"codeql"}')
               ;;
             "java")
-              matrix_includes+=('{"language":"java","scanner":"codeql"}')
+              matrix_includes+=('{"language":"java","scanner":"codeql","build_mode":"manual"}')
               ;;
             "cpp")
               matrix_includes+=('{"language":"cpp","scanner":"codeql"}')

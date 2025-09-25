@@ -178,6 +178,8 @@ jobs:
           language: ${{ matrix.language }}
           paths_ignored: ${{ inputs.paths_ignored }}
           rules_excluded: ${{ inputs.rules_excluded }}
+          build_mode: ${{ matrix.build_mode }}
+          build_command: ${{ matrix.build_command }}
 
   # Run Semgrep analysis once for all languages
   semgrep-analysis:
