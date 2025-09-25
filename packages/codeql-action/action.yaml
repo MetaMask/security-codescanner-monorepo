@@ -47,7 +47,7 @@ runs:
         yarn install --immutable
         # Run from workspace root where files are copied
         cd ${{ github.workspace }}
-        node scripts/generate-config.js
+        node scripts/generate-config.cjs
       shell: bash
       env:
         REPO: ${{inputs.repo}}
