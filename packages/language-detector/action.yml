@@ -69,12 +69,12 @@ runs:
           languages+=("go")
         fi
 
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "java"; then
+        if echo "$api_response" | jq -r 'keys[]' | grep -qiw "java"; then
           echo "✓ Found Java - adding to scanner list"
           languages+=("java")
         fi
 
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "c\+\+|c"; then
+        if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "^c\+\+$|^c$"; then
           echo "✓ Found C/C++ - adding to scanner list as 'cpp'"
           languages+=("cpp")
         fi
