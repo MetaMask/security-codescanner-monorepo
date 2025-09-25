@@ -42,27 +42,10 @@ debugConfig(config);
 // set languages output
 fs.appendFileSync(outputFile, `languages=${config.languages}\n`);
 
-// Convert relative query paths to absolute paths
-const processedQueries = config.queries.map(query => {
-  let processedUses = query.uses;
-
-  // If path is relative, convert to absolute path
-  if (!path.isAbsolute(processedUses)) {
-    // Resolve relative to the monorepo root (current working directory in GitHub Actions)
-    // The script runs from packages/codeql-action but paths are relative to monorepo root
-    processedUses = path.resolve(process.cwd(), processedUses);
-  }
-
-  return {
-    ...query,
-    uses: processedUses
-  };
-});
-
 const output = ejs.render(template, {
   pathsIgnored: [...config.pathsIgnored, ...inputs.pathsIgnored],
   rulesExcluded: [...config.rulesExcluded, ...inputs.rulesExcluded],
-  queries: processedQueries,
+  queries: config.queries,
 });
 console.log(output);
 fs.writeFileSync('codeql-config-generated.yml', output);
