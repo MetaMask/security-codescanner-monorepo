@@ -34,43 +34,57 @@ runs:
 
         echo "GitHub API response: $api_response"
 
+        # Show detected GitHub languages
+        detected_github_langs=$(echo "$api_response" | jq -r 'keys[]' 2>/dev/null || echo "none")
+        echo "GitHub detected languages: $detected_github_langs"
+
         # Initialize language array
         languages=()
 
         # Map GitHub language names to CodeQL/scanner language names
+        echo "Starting language mapping..."
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "javascript"; then
+          echo "✓ Found JavaScript - adding to scanner list"
           languages+=("javascript")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "typescript"; then
+          echo "✓ Found TypeScript - adding to scanner list"
           languages+=("typescript")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "python"; then
+          echo "✓ Found Python - adding to scanner list"
           languages+=("python")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "go"; then
+          echo "✓ Found Go - adding to scanner list"
           languages+=("go")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "java"; then
+          echo "✓ Found Java - adding to scanner list"
           languages+=("java")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "c\+\+|c"; then
+          echo "✓ Found C/C++ - adding to scanner list as 'cpp'"
           languages+=("cpp")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "c#"; then
+          echo "✓ Found C# - adding to scanner list as 'csharp'"
           languages+=("csharp")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "ruby"; then
+          echo "✓ Found Ruby - adding to scanner list"
           languages+=("ruby")
         fi
 
         if echo "$api_response" | jq -r 'keys[]' | grep -qi "kotlin"; then
+          echo "✓ Found Kotlin - adding to scanner list as 'java'"
           languages+=("java")  # Kotlin uses java scanner in CodeQL
         fi
 
@@ -79,9 +93,13 @@ runs:
           echo "Detected Solidity - will be scanned by Semgrep"
         fi
 
+        # Show final detection results
+        echo "Language detection summary: Found ${#languages[@]} languages for CodeQL scanning"
+        printf "Languages to scan: %s\n" "${languages[@]}"
+
         # Default to javascript if no languages detected or API call failed
         if [[ ${#languages[@]} -eq 0 ]]; then
-          echo "No languages detected or API call failed, defaulting to javascript"
+          echo "⚠️  No languages detected or API call failed, defaulting to javascript"
           languages+=("javascript")
         fi
 
