@@ -12,6 +12,7 @@ dist/
 build/
 lib/
 out/
+current-codeql-setup/
 
 # Runtime data
 pids
