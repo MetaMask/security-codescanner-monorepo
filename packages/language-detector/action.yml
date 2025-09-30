@@ -5,6 +5,10 @@ inputs:
   repo:
     description: 'Repository in format owner/repo'
     required: true
+  languages_config:
+    description: 'JSON array of language configurations to merge with auto-detected languages'
+    required: false
+    default: ''
 
 outputs:
   languages:
@@ -122,38 +126,102 @@ runs:
       shell: bash
       env:
         DETECTED_LANGUAGES: ${{ steps.detect.outputs.languages }}
+        LANGUAGES_CONFIG: ${{ inputs.languages_config }}
+        REPO: ${{ inputs.repo }}
       run: |
-        # Create matrix based on detected languages
+        # Create matrix based on detected languages and provided config
         matrix_includes=()
 
-        # Parse JSON array
+        echo "=== MATRIX CREATION DEBUG ==="
+        echo "Auto-detected languages: $DETECTED_LANGUAGES"
+        echo "Provided languages_config: $LANGUAGES_CONFIG"
+
+        # Function to get config for a specific language (workflow input takes priority)
+        get_language_config() {
+          local lang="$1"
+
+          # First try workflow input (highest priority)
+          if [[ -n "$LANGUAGES_CONFIG" ]]; then
+            workflow_config=$(echo "$LANGUAGES_CONFIG" | jq -r --arg lang "$lang" '.[] | select(.language == $lang)')
+            if [[ -n "$workflow_config" && "$workflow_config" != "null" ]]; then
+              echo "$workflow_config"
+              return
+            fi
+          fi
+
+          # Then try repo config (fallback)
+          repo_name=$(echo "$REPO" | cut -d'/' -f2)
+          config_file="../packages/codeql-action/repo-configs/${repo_name}.js"
+
+          if [[ -f "$config_file" ]]; then
+            # Extract buildCommands for this language from repo config
+            build_cmd=$(node -e "
+              const config = require('$config_file');
+              const buildCommands = config.buildCommands || {};
+              console.log(buildCommands['$lang'] || '');
+            " 2>/dev/null)
+
+            if [[ -n "$build_cmd" ]]; then
+              # Create config object from repo config
+              case "$lang" in
+                "java"|"java-kotlin")
+                  echo "{\"language\":\"$lang\",\"scanner\":\"codeql\",\"build_mode\":\"manual\",\"build_command\":\"$build_cmd\"}"
+                  return
+                  ;;
+              esac
+            fi
+          fi
+
+          # No custom config found
+          echo ""
+        }
+
+        # Parse auto-detected languages JSON array
         languages=$(echo "$DETECTED_LANGUAGES" | sed 's/\["\|"\]//g' | tr ',' '\n' | sed 's/^"//' | sed 's/"$//')
 
         while IFS= read -r lang; do
           lang=$(echo "$lang" | xargs) # trim whitespace
-          case "$lang" in
-            "javascript"|"typescript")
-              matrix_includes+=('{"language":"'$lang'","scanner":"codeql"}')
-              ;;
-            "python")
-              matrix_includes+=('{"language":"python","scanner":"codeql"}')
-              ;;
-            "go")
-              matrix_includes+=('{"language":"go","scanner":"codeql"}')
-              ;;
-            "java")
-              matrix_includes+=('{"language":"java","scanner":"codeql","build_mode":"manual"}')
-              ;;
-            "cpp")
-              matrix_includes+=('{"language":"cpp","scanner":"codeql"}')
-              ;;
-            "csharp")
-              matrix_includes+=('{"language":"csharp","scanner":"codeql"}')
-              ;;
-            "ruby")
-              matrix_includes+=('{"language":"ruby","scanner":"codeql"}')
-              ;;
-          esac
+
+          # Get custom config for this language if provided
+          custom_config=$(get_language_config "$lang")
+
+          if [[ -n "$custom_config" ]]; then
+            echo "✓ $lang detected - using provided config: $custom_config"
+            # Use the provided config directly
+            matrix_includes+=("$custom_config")
+          else
+            # Use default config based on language
+            case "$lang" in
+              "javascript"|"typescript")
+                echo "✓ $lang detected - using default config"
+                matrix_includes+=('{"language":"javascript-typescript","scanner":"codeql"}')
+                ;;
+              "python")
+                echo "✓ Python detected - using default config"
+                matrix_includes+=('{"language":"python","scanner":"codeql"}')
+                ;;
+              "go")
+                echo "✓ Go detected - using default config"
+                matrix_includes+=('{"language":"go","scanner":"codeql"}')
+                ;;
+              "java")
+                echo "✓ Java detected - using default config (requires manual build)"
+                matrix_includes+=('{"language":"java-kotlin","scanner":"codeql","build_mode":"manual"}')
+                ;;
+              "cpp")
+                echo "✓ C/C++ detected - using default config"
+                matrix_includes+=('{"language":"cpp","scanner":"codeql"}')
+                ;;
+              "csharp")
+                echo "✓ C# detected - using default config"
+                matrix_includes+=('{"language":"csharp","scanner":"codeql"}')
+                ;;
+              "ruby")
+                echo "✓ Ruby detected - using default config"
+                matrix_includes+=('{"language":"ruby","scanner":"codeql"}')
+                ;;
+            esac
+          fi
         done <<< "$languages"
 
         
@@ -163,4 +231,14 @@ runs:
         matrix="{\"include\":[${matrix_str%,}]}"
 
         echo "matrix=$matrix" >> $GITHUB_OUTPUT
-        echo "Created matrix: $matrix"
+
+        echo "=== FINAL MATRIX DEBUG ==="
+        echo "Generated matrix for CodeQL jobs:"
+        echo "$matrix" | jq '.' 2>/dev/null || echo "Raw matrix: $matrix"
+        echo
+        echo "Matrix entries:"
+        for i in "${!matrix_includes[@]}"; do
+          echo "  Entry $((i+1)): ${matrix_includes[$i]}" | jq '.' 2>/dev/null || echo "  Entry $((i+1)): ${matrix_includes[$i]}"
+        done
+        echo "Total matrix entries: ${#matrix_includes[@]}"
+        echo "=========================="

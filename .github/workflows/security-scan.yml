@@ -7,8 +7,22 @@ on:
         description: 'Repository that requested the scan'
         required: true
         type: string
-      languages:
-        description: 'JSON array of languages to scan (e.g., ["javascript", "python"]) - leave empty for auto-detection'
+      languages_config:
+        description: |
+          JSON array of language configurations. Auto-detects languages, uses config if provided.
+          Example:
+          [
+            {
+              "language": "java",
+              "build_mode": "manual",
+              "build_command": "./gradlew build",
+              "environment": "jdk-21"
+            },
+            {
+              "language": "javascript",
+              "build_mode": "none"
+            }
+          ]
         required: false
         type: string
         default: ''
@@ -39,8 +53,22 @@ on:
         required: true
         type: string
         default: 'witmicko/security-code-scanner-monorepo'
-      languages:
-        description: 'JSON array of languages to scan (e.g., ["javascript", "python"]) - leave empty for auto-detection'
+      languages_config:
+        description: |
+          JSON array of language configurations. Auto-detects languages, uses config if provided.
+          Example:
+          [
+            {
+              "language": "java",
+              "build_mode": "manual",
+              "build_command": "./gradlew build",
+              "environment": "jdk-21"
+            },
+            {
+              "language": "javascript",
+              "build_mode": "none"
+            }
+          ]
         required: false
         type: string
         default: ''
@@ -85,6 +113,7 @@ jobs:
         uses: ./packages/language-detector
         with:
           repo: ${{ inputs.repo }}
+          languages_config: ${{ inputs.languages_config }}
 
   # Debug logging job to show detected languages and API response
   debug-languages:

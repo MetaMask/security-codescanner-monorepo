@@ -79,6 +79,7 @@ runs:
     - name: Build code
       if: ${{ inputs.build_mode == 'manual' && inputs.build_command != null }}
       run: |
+        echo "Building code with command: ${{ inputs.build_command }}"
         cd ${{ github.workspace }}/${{ inputs.repo }}
         ${{ inputs.build_command }}
       shell: bash
