@@ -2,9 +2,14 @@ const config = {
   languages: ['javascript-typescript', 'typescript', 'go'],
   pathsIgnored: ['test'],
   rulesExcluded: ['js/log-injection'],
-  buildCommands: {
-    'java-kotlin': './gradlew :coordinator:app:build',
-  },
+  languages_config: [
+    {
+      "language": "java-kotlin",
+      "build_mode": "manual",
+      "build_command": "./gradlew :coordinator:app:build",
+      "environment": "jdk-21"
+    }
+  ],
   queries: [
     {
       name: 'queries for linea',
