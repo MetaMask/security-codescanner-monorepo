@@ -10,8 +10,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+    - name: Copy Semgrep Action Files to Workspace Root
+      run: |
+        echo "Copying Semgrep action files to workspace root for flat structure..."
+        cp -r ${{ github.action_path }}/rules ${{ github.workspace }}/
+        echo "Files copied. Semgrep rules structure:"
+        ls -la ${{ github.workspace }}/rules/
+      shell: bash
 
     - name: Install Semgrep
       run: |
@@ -26,7 +31,7 @@ runs:
 
     - name: Run Semgrep Scan
       run: |
-        semgrep --config ${{ github.action_path }}/rules/src --output semgrep-results.sarif --sarif --verbose
+        semgrep --config ./rules/src --output semgrep-results.sarif --sarif --verbose
       shell: bash
       continue-on-error: true
 
@@ -34,3 +39,4 @@ runs:
       uses: github/codeql-action/upload-sarif@v3
       with:
         sarif_file: semgrep-results.sarif
+        checkout_path: ${{ github.workspace }}

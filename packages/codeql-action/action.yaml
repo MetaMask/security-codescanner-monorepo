@@ -24,6 +24,18 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - name: Debug CodeQL Action Inputs
+      run: |
+        echo "=================== CODEQL ACTION INPUT DEBUG ==================="
+        echo "Repository: ${{ inputs.repo }}"
+        echo "Language: ${{ inputs.language }}"
+        echo "Paths ignored: ${{ inputs.paths_ignored }}"
+        echo "Rules excluded: ${{ inputs.rules_excluded }}"
+        echo "Build mode: ${{ inputs.build_mode }}"
+        echo "Build command: ${{ inputs.build_command }}"
+        echo "=================================================================="
+      shell: bash
+
     - name: Checkout Custom Query Repository
       id: checkout-custom-query
       uses: actions/checkout@v4
