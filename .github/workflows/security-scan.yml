@@ -101,6 +101,9 @@ jobs:
     steps:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
+        with:
+          repository: witmicko/security-code-scanner-monorepo
+          path: security-scanner-monorepo
 
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -110,7 +113,7 @@ jobs:
 
       - name: Detect languages and create matrix
         id: detect-languages
-        uses: ./packages/language-detector
+        uses: ./security-scanner-monorepo/packages/language-detector
         with:
           repo: ${{ inputs.repo }}
           languages_config: ${{ inputs.languages_config }}
@@ -168,6 +171,9 @@ jobs:
     steps:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
+        with:
+          repository: witmicko/security-code-scanner-monorepo
+          path: security-scanner-monorepo
 
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -187,8 +193,8 @@ jobs:
           echo "Looking for query suite files:"
           find . -name "*.qls" -type f 2>/dev/null || echo "No .qls files found"
           echo
-          echo "Contents of packages/codeql-action/query-suites/:"
-          ls -la packages/codeql-action/query-suites/ 2>/dev/null || echo "Directory not found"
+          echo "Contents of security-scanner-monorepo/packages/codeql-action/query-suites/:"
+          ls -la security-scanner-monorepo/packages/codeql-action/query-suites/ 2>/dev/null || echo "Directory not found"
           echo
           echo "Contents of custom-queries/query-suites/:"
           ls -la custom-queries/query-suites/ 2>/dev/null || echo "Directory not found"
@@ -201,7 +207,7 @@ jobs:
           echo "================================================================="
 
       - name: Run CodeQL Analysis
-        uses: ./packages/codeql-action
+        uses: ./security-scanner-monorepo/packages/codeql-action
         with:
           repo: ${{ inputs.repo }}
           language: ${{ matrix.language }}
@@ -221,6 +227,9 @@ jobs:
     steps:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
+        with:
+          repository: witmicko/security-code-scanner-monorepo
+          path: security-scanner-monorepo
 
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -229,7 +238,7 @@ jobs:
           path: ${{ inputs.repo }}
 
       - name: Run Semgrep Analysis
-        uses: ./packages/semgrep-action
+        uses: ./security-scanner-monorepo/packages/semgrep-action
         with:
           paths_ignored: ${{ inputs.paths_ignored }}
 
