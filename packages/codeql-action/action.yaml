@@ -57,7 +57,8 @@ runs:
     - name: Generate Config
       id: generate-config
       run: |
-        # Install from workspace root to handle allow-scripts
+        # Install from monorepo directory where dependencies are defined
+        cd ${{ github.workspace }}/security-scanner-monorepo
         yarn install --immutable
         # Run from workspace root where files are copied
         cd ${{ github.workspace }}
