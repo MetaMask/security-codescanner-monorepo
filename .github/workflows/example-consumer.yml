@@ -9,17 +9,26 @@ on:
   workflow_dispatch:
     inputs:
       target_repo:
-        description: 'Repository to scan'
+        description: 'Repository to scan (defaults to current repository)'
         required: false
         type: string
-        default: 'Consensys/linea-monorepo'
 
 jobs:
   security-scan:
-    uses: ./.github/workflows/security-scan.yml
+    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ inputs.target_repo || github.repository }}
-      # languages_config: '' # Leave empty to use built in language detection and config
+      # languages_config: '' # Leave empty for auto-detection with repo defaults
+      # Example with custom Java build:
+      # languages_config: |
+      #   [
+      #     {
+      #       "language": "java",
+      #       "build_mode": "manual",
+      #       "build_command": "./gradlew :coordinator:app:build",
+      #       "environment": "jdk-21"
+      #     }
+      #   ]
       paths_ignored: |
         .storybook/
         **/__snapshots__/
