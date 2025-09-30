@@ -5,7 +5,7 @@ on:
     inputs:
       repo:
         description: 'Repository that requested the scan'
-        required: true
+        required: false
         type: string
       languages_config:
         description: |
