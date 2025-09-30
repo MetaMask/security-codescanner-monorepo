@@ -19,7 +19,7 @@ jobs:
     uses: ./.github/workflows/security-scan.yml
     with:
       repo: ${{ inputs.target_repo || github.repository }}
-      languages: '' # Leave empty for auto-detection via GitHub API
+      # languages_config: '' # Leave empty to use built in language detection and config
       paths_ignored: |
         .storybook/
         **/__snapshots__/
