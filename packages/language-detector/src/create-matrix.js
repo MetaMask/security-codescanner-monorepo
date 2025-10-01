@@ -30,6 +30,7 @@ function main() {
   }
 }
 
+// Only run main function when script is executed directly, not when imported
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }

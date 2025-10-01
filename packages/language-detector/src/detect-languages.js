@@ -24,6 +24,7 @@ async function main() {
   console.log(JSON.stringify(detectedLanguages));
 }
 
+// Only run main function when script is executed directly, not when imported
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(error => {
     console.error('Error:', error.message);
