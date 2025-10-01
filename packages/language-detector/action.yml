@@ -6,7 +6,21 @@ inputs:
     description: 'Repository in format owner/repo'
     required: true
   languages_config:
-    description: 'JSON array of language configurations to merge with auto-detected languages'
+    description: |
+      JSON array of language configurations to merge with auto-detected languages.
+      Example:
+      [
+        {
+          "language": "java-kotlin",
+          "build_mode": "manual",
+          "build_command": "./gradlew build",
+          "environment": "jdk-21"
+        },
+        {
+          "language": "javascript-typescript",
+          "build_mode": "none"
+        }
+      ]
     required: false
     default: ''
 
@@ -21,6 +35,17 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        yarn install --immutable 2>/dev/null || true
+
     - name: Detect Languages via GitHub API
       id: detect
       shell: bash
@@ -28,98 +53,10 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
         REPO: ${{ inputs.repo }}
       run: |
-        # Get languages from GitHub API
-        echo "Fetching languages for repository: $REPO"
-
-        api_response=$(gh api \
-          -H "Accept: application/vnd.github+json" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          "/repos/$REPO/languages" 2>/dev/null || echo "{}")
-
-        echo "=== GITHUB API RESPONSE ==="
-        echo "Raw API response: $api_response"
-        echo "==========================="
-
-        # Show detected GitHub languages with byte counts
-        echo "GitHub languages with byte counts:"
-        echo "$api_response" | jq -r 'to_entries[] | "\(.key): \(.value) bytes"' 2>/dev/null || echo "Failed to parse JSON response"
-
-        # Show just the language names
-        detected_github_langs=$(echo "$api_response" | jq -r 'keys[]' 2>/dev/null || echo "none")
-        echo "GitHub detected language names: $detected_github_langs"
-
-        # Initialize language array
-        languages=()
-
-        # Map GitHub language names to CodeQL/scanner language names
-        echo "Starting language mapping..."
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "javascript"; then
-          echo "✓ Found JavaScript - adding to scanner list"
-          languages+=("javascript")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "typescript"; then
-          echo "✓ Found TypeScript - adding to scanner list"
-          languages+=("typescript")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "python"; then
-          echo "✓ Found Python - adding to scanner list"
-          languages+=("python")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "go"; then
-          echo "✓ Found Go - adding to scanner list"
-          languages+=("go")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qiw "java"; then
-          echo "✓ Found Java - adding to scanner list"
-          languages+=("java")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi -E "^c\+\+$|^c$"; then
-          echo "✓ Found C/C++ - adding to scanner list as 'cpp'"
-          languages+=("cpp")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "c#"; then
-          echo "✓ Found C# - adding to scanner list as 'csharp'"
-          languages+=("csharp")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "ruby"; then
-          echo "✓ Found Ruby - adding to scanner list"
-          languages+=("ruby")
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "kotlin"; then
-          echo "✓ Found Kotlin - adding to scanner list as 'java'"
-          languages+=("java")  # Kotlin uses java scanner in CodeQL
-        fi
-
-        if echo "$api_response" | jq -r 'keys[]' | grep -qi "solidity"; then
-          # Solidity will be handled by semgrep primarily, but note it exists
-          echo "Detected Solidity - will be scanned by Semgrep"
-        fi
-
-        # Show final detection results
-        echo "Language detection summary: Found ${#languages[@]} languages for CodeQL scanning"
-        printf "Languages to scan: %s\n" "${languages[@]}"
-
-        # Default to javascript if no languages detected or API call failed
-        if [[ ${#languages[@]} -eq 0 ]]; then
-          echo "⚠️  No languages detected or API call failed, defaulting to javascript"
-          languages+=("javascript")
-        fi
-
-        # Convert to JSON array
-        printf -v json_languages '%s,' "${languages[@]}"
-        json_languages="[\"${json_languages%,}\"]"
-        json_languages=$(echo "$json_languages" | sed 's/","/", "/g')
-
-        echo "languages=$json_languages" >> $GITHUB_OUTPUT
-        echo "Detected languages: $json_languages"
+        cd ${{ github.action_path }}
+        languages=$(node src/detect-languages.js "$REPO" "$GITHUB_TOKEN")
+        echo "languages=$languages" >> $GITHUB_OUTPUT
+        echo "Detected languages: $languages"
 
     - name: Create Scanner Matrix
       id: create-matrix
@@ -127,118 +64,7 @@ runs:
       env:
         DETECTED_LANGUAGES: ${{ steps.detect.outputs.languages }}
         LANGUAGES_CONFIG: ${{ inputs.languages_config }}
-        REPO: ${{ inputs.repo }}
       run: |
-        # Create matrix based on detected languages and provided config
-        matrix_includes=()
-
-        echo "=== MATRIX CREATION DEBUG ==="
-        echo "Auto-detected languages: $DETECTED_LANGUAGES"
-        echo "Provided languages_config: $LANGUAGES_CONFIG"
-
-        # Function to get config for a specific language (workflow input takes priority)
-        get_language_config() {
-          local lang="$1"
-
-          # First try workflow input (highest priority)
-          if [[ -n "$LANGUAGES_CONFIG" ]]; then
-            workflow_config=$(echo "$LANGUAGES_CONFIG" | jq -r --arg lang "$lang" '.[] | select(.language == $lang)')
-            if [[ -n "$workflow_config" && "$workflow_config" != "null" ]]; then
-              echo "$workflow_config"
-              return
-            fi
-          fi
-
-          # Then try repo config (fallback)
-          repo_name=$(echo "$REPO" | cut -d'/' -f2)
-          config_file="../packages/codeql-action/repo-configs/${repo_name}.js"
-
-          if [[ -f "$config_file" ]]; then
-            # Extract buildCommands for this language from repo config
-            build_cmd=$(node -e "
-              const config = require('$config_file');
-              const buildCommands = config.buildCommands || {};
-              console.log(buildCommands['$lang'] || '');
-            " 2>/dev/null)
-
-            if [[ -n "$build_cmd" ]]; then
-              # Create config object from repo config
-              case "$lang" in
-                "java"|"java-kotlin")
-                  echo "{\"language\":\"$lang\",\"scanner\":\"codeql\",\"build_mode\":\"manual\",\"build_command\":\"$build_cmd\"}"
-                  return
-                  ;;
-              esac
-            fi
-          fi
-
-          # No custom config found
-          echo ""
-        }
-
-        # Parse auto-detected languages JSON array
-        languages=$(echo "$DETECTED_LANGUAGES" | sed 's/\["\|"\]//g' | tr ',' '\n' | sed 's/^"//' | sed 's/"$//')
-
-        while IFS= read -r lang; do
-          lang=$(echo "$lang" | xargs) # trim whitespace
-
-          # Get custom config for this language if provided
-          custom_config=$(get_language_config "$lang")
-
-          if [[ -n "$custom_config" ]]; then
-            echo "✓ $lang detected - using provided config: $custom_config"
-            # Use the provided config directly
-            matrix_includes+=("$custom_config")
-          else
-            # Use default config based on language
-            case "$lang" in
-              "javascript"|"typescript")
-                echo "✓ $lang detected - using default config"
-                matrix_includes+=('{"language":"javascript-typescript","scanner":"codeql"}')
-                ;;
-              "python")
-                echo "✓ Python detected - using default config"
-                matrix_includes+=('{"language":"python","scanner":"codeql"}')
-                ;;
-              "go")
-                echo "✓ Go detected - using default config"
-                matrix_includes+=('{"language":"go","scanner":"codeql"}')
-                ;;
-              "java")
-                echo "✓ Java detected - using default config (requires manual build)"
-                matrix_includes+=('{"language":"java-kotlin","scanner":"codeql","build_mode":"manual"}')
-                ;;
-              "cpp")
-                echo "✓ C/C++ detected - using default config"
-                matrix_includes+=('{"language":"cpp","scanner":"codeql"}')
-                ;;
-              "csharp")
-                echo "✓ C# detected - using default config"
-                matrix_includes+=('{"language":"csharp","scanner":"codeql"}')
-                ;;
-              "ruby")
-                echo "✓ Ruby detected - using default config"
-                matrix_includes+=('{"language":"ruby","scanner":"codeql"}')
-                ;;
-            esac
-          fi
-        done <<< "$languages"
-
-        
-
-        # Build final matrix
-        printf -v matrix_str '%s,' "${matrix_includes[@]}"
-        matrix="{\"include\":[${matrix_str%,}]}"
-
+        cd ${{ github.action_path }}
+        matrix=$(node src/create-matrix.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
         echo "matrix=$matrix" >> $GITHUB_OUTPUT
-
-        echo "=== FINAL MATRIX DEBUG ==="
-        echo "Generated matrix for CodeQL jobs:"
-        echo "$matrix" | jq '.' 2>/dev/null || echo "Raw matrix: $matrix"
-        echo
-        echo "Matrix entries:"
-        for i in "${!matrix_includes[@]}"; do
-          echo "  Entry $((i+1)): ${matrix_includes[$i]}" | jq '.' 2>/dev/null || echo "  Entry $((i+1)): ${matrix_includes[$i]}"
-        done
-        echo "Total matrix entries: ${#matrix_includes[@]}"
-        echo "=========================="
