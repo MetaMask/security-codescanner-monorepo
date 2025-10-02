@@ -9,6 +9,10 @@ const config = {
       "build_command": "./gradlew :coordinator:app:build",
       "version": "21",
       "distribution": "temurin"
+    },
+    {
+      "language": "cpp",
+      "ignore": true
     }
   ],
   queries: [

@@ -56,13 +56,7 @@ runs:
       run: corepack enable
       shell: bash
 
-    - name: Set up JDK for Java/Kotlin
-      if: ${{ (inputs.language == 'java-kotlin' || inputs.language == 'java') && inputs.version != '' }}
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ inputs.version }}
-        distribution: ${{ inputs.distribution || 'temurin' }}
-
+   
     - name: Copy CodeQL Action Files to Workspace Root
       run: |
         echo "Copying CodeQL action files to workspace root for flat structure..."
@@ -89,20 +83,43 @@ runs:
         LANGUAGE: ${{ inputs.language }}
         PATHS_IGNORED: ${{ inputs.paths_ignored}}
         RULES_EXCLUDED: ${{ inputs.rules_excluded}}
-        
+
+    - name: Debug Config Generation Outputs
+      run: |
+        echo "================= CONFIG GENERATION OUTPUTS ================="
+        echo "Languages: ${{ steps.generate-config.outputs.languages }}"
+        echo "Build mode: ${{ steps.generate-config.outputs.build_mode }}"
+        echo "Build command: ${{ steps.generate-config.outputs.build_command }}"
+        echo "Version: ${{ steps.generate-config.outputs.version }}"
+        echo "Distribution: ${{ steps.generate-config.outputs.distribution }}"
+        echo "=============================================================="
+        echo ""
+        echo "================= GENERATED CODEQL CONFIG FILE ================="
+        cat ${{ github.workspace }}/codeql-config-generated.yml
+        echo "=================================================================="
+      shell: bash
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         config-file: ${{ github.workspace }}/codeql-config-generated.yml
-        languages: ${{ inputs.language }}
+        languages: ${{ steps.generate-config.outputs.languages }}
         source-root: ${{ inputs.repo }}
 
+
+     - name: Set up JDK for Java/Kotlin
+      if: ${{ (inputs.language == 'java-kotlin' || inputs.language == 'java') && steps.generate-config.outputs.version != '' }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ steps.generate-config.outputs.version }}
+        distribution: ${{ steps.generate-config.outputs.distribution || 'temurin' }}
+
     - name: Build code
-      if: ${{ inputs.build_mode == 'manual' && inputs.build_command != null }}
+      if: ${{ steps.generate-config.outputs.build_mode == 'manual' && steps.generate-config.outputs.build_command != '' }}
       run: |
-        echo "Building code with command: ${{ inputs.build_command }}"
+        echo "Building code with command: ${{ steps.generate-config.outputs.build_command }}"
         cd ${{ github.workspace }}/${{ inputs.repo }}
-        ${{ inputs.build_command }}
+        ${{ steps.generate-config.outputs.build_command }}
       shell: bash
 
     - name: Run CodeQL Analysis
