@@ -107,7 +107,7 @@ runs:
         source-root: ${{ inputs.repo }}
 
 
-     - name: Set up JDK for Java/Kotlin
+    - name: Set up JDK for Java/Kotlin
       if: ${{ (inputs.language == 'java-kotlin' || inputs.language == 'java') && steps.generate-config.outputs.version != '' }}
       uses: actions/setup-java@v4
       with:
