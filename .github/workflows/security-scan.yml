@@ -16,7 +16,8 @@ on:
               "language": "java",
               "build_mode": "manual",
               "build_command": "./gradlew build",
-              "environment": "jdk-21"
+              "version": "21",
+              "distribution": "temurin"
             },
             {
               "language": "javascript",
@@ -62,7 +63,8 @@ on:
               "language": "java",
               "build_mode": "manual",
               "build_command": "./gradlew build",
-              "environment": "jdk-21"
+              "version": "21",
+              "distribution": "temurin"
             },
             {
               "language": "javascript",

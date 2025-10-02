@@ -16,7 +16,8 @@ Detects programming languages in a repository using the GitHub API and creates a
           "language": "java-kotlin",
           "build_mode": "manual",
           "build_command": "./gradlew build",
-          "environment": "jdk-21"
+          "version": "21",
+          "distribution": "temurin"
         }
       ]
 
