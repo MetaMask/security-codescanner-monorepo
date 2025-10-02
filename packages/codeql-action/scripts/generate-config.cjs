@@ -57,6 +57,12 @@ const applyLanguageConfigFallbacks = (inputs, config) => {
     return inputs;
   }
 
+  // Check if language should be ignored
+  if (languageConfig.ignore === true) {
+    console.log(`Language "${inputs.language}" is marked to be ignored, skipping analysis`);
+    return { ...inputs, shouldIgnore: true };
+  }
+
   // Apply fallbacks for missing inputs
   const inputsWithFallbacks = { ...inputs };
 
@@ -99,6 +105,7 @@ fs.appendFileSync(outputFile, `build_mode=${finalInputs.buildMode || ''}\n`);
 fs.appendFileSync(outputFile, `build_command=${finalInputs.buildCommand || ''}\n`);
 fs.appendFileSync(outputFile, `version=${finalInputs.version || ''}\n`);
 fs.appendFileSync(outputFile, `distribution=${finalInputs.distribution || ''}\n`);
+fs.appendFileSync(outputFile, `should_ignore=${finalInputs.shouldIgnore ? 'true' : 'false'}\n`);
 
 const output = ejs.render(template, {
   pathsIgnored: [...config.pathsIgnored, ...finalInputs.pathsIgnored],

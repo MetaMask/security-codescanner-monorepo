@@ -92,6 +92,7 @@ runs:
         echo "Build command: ${{ steps.generate-config.outputs.build_command }}"
         echo "Version: ${{ steps.generate-config.outputs.version }}"
         echo "Distribution: ${{ steps.generate-config.outputs.distribution }}"
+        echo "Should ignore: ${{ steps.generate-config.outputs.should_ignore }}"
         echo "=============================================================="
         echo ""
         echo "================= GENERATED CODEQL CONFIG FILE ================="
@@ -99,11 +100,18 @@ runs:
         echo "=================================================================="
       shell: bash
 
+    - name: Check if Language Should Be Ignored
+      if: ${{ steps.generate-config.outputs.should_ignore == 'true' }}
+      run: |
+        echo "Language ${{ inputs.language }} is configured to be ignored. Exiting CodeQL analysis."
+        exit 0
+      shell: bash
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
         config-file: ${{ github.workspace }}/codeql-config-generated.yml
-        languages: ${{ steps.generate-config.outputs.languages }}
+        languages: ${{ inputs.language }}
         source-root: ${{ inputs.repo }}
 
 

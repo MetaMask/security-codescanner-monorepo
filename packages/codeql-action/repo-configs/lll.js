@@ -1,5 +1,4 @@
 const config = {
-  languages: ['javascript-typescript', 'typescript', 'go'],
   pathsIgnored: ['test'],
   rulesExcluded: ['js/log-injection'],
   languages_config: [
