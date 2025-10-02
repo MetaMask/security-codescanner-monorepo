@@ -103,8 +103,9 @@ runs:
     - name: Check if Language Should Be Ignored
       if: ${{ steps.generate-config.outputs.should_ignore == 'true' }}
       run: |
-        echo "Language ${{ inputs.language }} is configured to be ignored. Exiting CodeQL analysis."
-        exit 0
+        echo "Language ${{ inputs.language }} is configured to be ignored. Cancelling CodeQL analysis."
+        gh run cancel ${{ github.run_id }}
+        exit 1
       shell: bash
 
     - name: Initialize CodeQL
