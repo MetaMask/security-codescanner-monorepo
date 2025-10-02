@@ -254,5 +254,35 @@ describe('Language Detection CLI Integration Tests', () => {
       });
     });
 
+    test('should ignore languages marked with ignore: true', async () => {
+      const detectedLanguages = '["javascript", "cpp", "java"]';
+
+      // Create matrix with cpp ignored and java configured
+      const customConfig = '[{"language":"cpp","ignore":true},{"language":"java","version":"21","distribution":"temurin"}]';
+      const matrixResult = await runCreateMatrix(detectedLanguages, customConfig);
+
+      expect(matrixResult.success).toBe(true);
+
+      const matrix = JSON.parse(matrixResult.stdout);
+
+      // Should have javascript and java, but not cpp
+      expect(matrix.include).toHaveLength(2);
+
+      const languages = matrix.include.map(entry => entry.language);
+      expect(languages).toContain('javascript-typescript');
+      expect(languages).toContain('java');
+      expect(languages).not.toContain('cpp');
+
+      // Java should have the custom config
+      const javaEntry = matrix.include.find(entry => entry.language === 'java');
+      expect(javaEntry).toEqual({
+        language: 'java',
+        build_mode: 'manual',
+        build_command: './mvnw compile',
+        version: '21',
+        distribution: 'temurin'
+      });
+    });
+
   });
 });

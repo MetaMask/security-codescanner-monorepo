@@ -107,14 +107,25 @@ export function createMatrix(detectedLanguages, languagesConfig = []) {
 
     const defaultConfig = DEFAULT_CONFIGS[lang];
 
+    // Check if language should be ignored
+    if (customConfig && customConfig.ignore === true) {
+      console.error(`⚠️  ${lang} detected but marked as ignored - skipping`);
+      continue;
+    }
+
     if (customConfig && defaultConfig) {
       // Merge custom config with default config (custom config takes priority)
       const mergedConfig = { ...defaultConfig, ...customConfig };
+      // Remove ignore property from final config as it's only for control flow
+      delete mergedConfig.ignore;
       console.error(`✓ ${lang} detected - using merged config:`, mergedConfig);
       matrixIncludes.push(mergedConfig);
     } else if (customConfig) {
-      console.error(`✓ ${lang} detected - using provided config:`, customConfig);
-      matrixIncludes.push(customConfig);
+      // Remove ignore property from final config as it's only for control flow
+      const finalConfig = { ...customConfig };
+      delete finalConfig.ignore;
+      console.error(`✓ ${lang} detected - using provided config:`, finalConfig);
+      matrixIncludes.push(finalConfig);
     } else if (defaultConfig) {
       console.error(`✓ ${lang} detected - using default config:`, defaultConfig);
       matrixIncludes.push(defaultConfig);

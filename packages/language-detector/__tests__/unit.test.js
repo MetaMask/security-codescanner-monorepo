@@ -240,4 +240,44 @@ describe('createMatrix', () => {
       ]
     });
   });
+
+  test('ignores languages marked with ignore: true', () => {
+    const detectedLanguages = ['javascript', 'cpp', 'java'];
+    const customConfig = [
+      { language: 'cpp', ignore: true },
+      { language: 'java', version: '17' }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        { language: 'javascript-typescript' },
+        {
+          language: 'java',
+          build_mode: 'manual',
+          build_command: './mvnw compile',
+          version: '17'
+        }
+      ]
+    });
+  });
+
+  test('removes ignore property from final config', () => {
+    const detectedLanguages = ['python'];
+    const customConfig = [
+      { language: 'python', ignore: false, build_mode: 'none' }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        { language: 'python', build_mode: 'none' }
+      ]
+    });
+
+    // Ensure ignore property is not in final config
+    expect(result.include[0]).not.toHaveProperty('ignore');
+  });
 });
