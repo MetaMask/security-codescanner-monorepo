@@ -14,7 +14,8 @@ inputs:
           "language": "java-kotlin",
           "build_mode": "manual",
           "build_command": "./gradlew build",
-          "environment": "jdk-21"
+          "version": "21",
+          "distribution": "temurin"
         },
         {
           "language": "javascript-typescript",
@@ -66,5 +67,5 @@ runs:
         LANGUAGES_CONFIG: ${{ inputs.languages_config }}
       run: |
         cd ${{ github.action_path }}
-        matrix=$(node src/create-matrix.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
+        matrix=$(node src/language-detector.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
         echo "matrix=$matrix" >> $GITHUB_OUTPUT

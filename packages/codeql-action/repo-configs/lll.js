@@ -7,7 +7,8 @@ const config = {
       "language": "java-kotlin",
       "build_mode": "manual",
       "build_command": "./gradlew :coordinator:app:build",
-      "environment": "jdk-21"
+      "version": "21",
+      "distribution": "temurin"
     }
   ],
   queries: [

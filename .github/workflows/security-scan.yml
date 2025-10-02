@@ -16,7 +16,8 @@ on:
               "language": "java",
               "build_mode": "manual",
               "build_command": "./gradlew build",
-              "environment": "jdk-21"
+              "version": "21",
+              "distribution": "temurin"
             },
             {
               "language": "javascript",
@@ -62,7 +63,8 @@ on:
               "language": "java",
               "build_mode": "manual",
               "build_command": "./gradlew build",
-              "environment": "jdk-21"
+              "version": "21",
+              "distribution": "temurin"
             },
             {
               "language": "javascript",
@@ -215,6 +217,8 @@ jobs:
           rules_excluded: ${{ inputs.rules_excluded }}
           build_mode: ${{ matrix.build_mode }}
           build_command: ${{ matrix.build_command }}
+          version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
 
   # Run Semgrep analysis once for all languages
   semgrep-analysis:

@@ -87,9 +87,9 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
-        { language: 'python', scanner: 'codeql' },
-        { language: 'java-kotlin', scanner: 'codeql', build_mode: 'manual' }
+        { language: 'javascript-typescript' },
+        { language: 'python' },
+        { language: 'java-kotlin', build_mode: 'manual', build_command: './mvnw compile' }
       ]
     });
   });
@@ -101,7 +101,7 @@ describe('createMatrix', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './gradlew build',
-        environment: 'jdk-21'
+        version: '21'
       }
     ];
 
@@ -109,12 +109,12 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
+        { language: 'javascript-typescript' },
         {
           language: 'java-kotlin',
           build_mode: 'manual',
           build_command: './gradlew build',
-          environment: 'jdk-21'
+          version: '21'
         }
       ]
     });
@@ -143,6 +143,58 @@ describe('createMatrix', () => {
     });
   });
 
+  test('handles custom version only (no distribution)', () => {
+    const detectedLanguages = ['java'];
+    const customConfig = [
+      {
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '21'
+      }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        {
+          language: 'java-kotlin',
+          build_mode: 'manual',
+          build_command: './gradlew build',
+          version: '21'
+        }
+      ]
+    });
+  });
+
+  test('handles custom version and distribution config', () => {
+    const detectedLanguages = ['java'];
+    const customConfig = [
+      {
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '17',
+        distribution: 'zulu'
+      }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        {
+          language: 'java-kotlin',
+          build_mode: 'manual',
+          build_command: './gradlew build',
+          version: '17',
+          distribution: 'zulu'
+        }
+      ]
+    });
+  });
+
   test('ignores custom config for undetected languages', () => {
     const detectedLanguages = ['javascript'];
     const customConfig = [
@@ -162,7 +214,7 @@ describe('createMatrix', () => {
   test('handles empty inputs', () => {
     expect(createMatrix([])).toEqual({ include: [] });
     expect(createMatrix(['javascript'], [])).toEqual({
-      include: [{ language: 'javascript-typescript', scanner: 'codeql' }]
+      include: [{ language: 'javascript-typescript' }]
     });
   });
 
@@ -170,11 +222,10 @@ describe('createMatrix', () => {
     const detectedLanguages = ['javascript', 'typescript'];
     const result = createMatrix(detectedLanguages);
 
-    // Should only have one entry since both map to javascript-typescript
+    // Should only have one entry since both map to javascript-typescript and duplicates are removed
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
-        { language: 'javascript-typescript', scanner: 'codeql' }
+        { language: 'javascript-typescript' }
       ]
     });
   });
@@ -185,7 +236,7 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' }
+        { language: 'javascript-typescript' }
       ]
     });
   });

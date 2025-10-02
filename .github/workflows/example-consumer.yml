@@ -26,7 +26,7 @@ jobs:
       #       "language": "java",
       #       "build_mode": "manual",
       #       "build_command": "./gradlew :coordinator:app:build",
-      #       "environment": "jdk-21"
+      #       "version": "21"
       #     }
       #   ]
       paths_ignored: |

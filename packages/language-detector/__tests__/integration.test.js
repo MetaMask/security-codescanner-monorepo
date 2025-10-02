@@ -53,7 +53,7 @@ const runCreateMatrix = (detectedLanguages, customConfig) => {
   const args = [];
   if (detectedLanguages !== undefined) args.push(detectedLanguages);
   if (customConfig !== undefined) args.push(customConfig);
-  return runScript('create-matrix.js', args);
+  return runScript('language-detector.js', args);
 };
 
 describe('Language Detection CLI Integration Tests', () => {
@@ -100,7 +100,7 @@ describe('Language Detection CLI Integration Tests', () => {
     }, 10000);
   });
 
-  describe('create-matrix.js', () => {
+  describe('language-detector.js (matrix creation)', () => {
     test('should create matrix with detected languages only', async () => {
       const detectedLanguages = '["javascript", "python", "java"]';
       const result = await runCreateMatrix(detectedLanguages);
@@ -113,15 +113,15 @@ describe('Language Detection CLI Integration Tests', () => {
 
       // Check expected matrix entries
       expect(matrix.include).toEqual(expect.arrayContaining([
-        { language: 'javascript-typescript', scanner: 'codeql' },
-        { language: 'python', scanner: 'codeql' },
-        { language: 'java-kotlin', scanner: 'codeql', build_mode: 'manual' }
+        { language: 'javascript-typescript' },
+        { language: 'python' },
+        { language: 'java-kotlin', build_mode: 'manual', build_command: './mvnw compile' }
       ]));
     });
 
     test('should merge custom config with detected languages', async () => {
       const detectedLanguages = '["javascript", "java"]';
-      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","environment":"jdk-21"}]';
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","version":"21"}]';
 
       const result = await runCreateMatrix(detectedLanguages, customConfig);
 
@@ -136,14 +136,13 @@ describe('Language Detection CLI Integration Tests', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './gradlew build',
-        environment: 'jdk-21'
+        version: '21'
       });
 
       // Should use default config for javascript
       const jsEntry = matrix.include.find(entry => entry.language === 'javascript-typescript');
       expect(jsEntry).toEqual({
-        language: 'javascript-typescript',
-        scanner: 'codeql'
+        language: 'javascript-typescript'
       });
     });
 
@@ -161,7 +160,7 @@ describe('Language Detection CLI Integration Tests', () => {
 
       expect(result.success).toBe(false);
       expect(result.code).toBe(1);
-      expect(result.stderr).toContain('Usage: node create-matrix.js');
+      expect(result.stderr).toContain('Usage: node language-detector.js');
     });
 
     test('should handle invalid JSON gracefully', async () => {
@@ -180,8 +179,8 @@ describe('Language Detection CLI Integration Tests', () => {
 
       const matrix = JSON.parse(result.stdout);
       expect(matrix.include).toEqual([
-        { language: 'go', scanner: 'codeql' },
-        { language: 'python', scanner: 'codeql' }
+        { language: 'go' },
+        { language: 'python' }
       ]);
     });
   });
@@ -210,7 +209,7 @@ describe('Language Detection CLI Integration Tests', () => {
       const detectedLanguages = '["javascript", "java"]';
 
       // Create matrix with custom Java config
-      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./mvnw compile","environment":"jdk-17"}]';
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./mvnw compile","version":"17","distribution":"zulu"}]';
       const matrixResult = await runCreateMatrix(detectedLanguages, customConfig);
 
       expect(matrixResult.success).toBe(true);
@@ -223,15 +222,37 @@ describe('Language Detection CLI Integration Tests', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './mvnw compile',
-        environment: 'jdk-17'
+        version: '17',
+        distribution: 'zulu'
       });
 
       // Should use default config for JavaScript
       const jsEntry = matrix.include.find(entry => entry.language === 'javascript-typescript');
       expect(jsEntry).toEqual({
-        language: 'javascript-typescript',
-        scanner: 'codeql'
+        language: 'javascript-typescript'
       });
     });
+
+    test('should create matrix with custom version and distribution', async () => {
+      const detectedLanguages = '["java"]';
+
+      // Create matrix with custom Java config using Corretto distribution
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","version":"11","distribution":"corretto"}]';
+      const matrixResult = await runCreateMatrix(detectedLanguages, customConfig);
+
+      expect(matrixResult.success).toBe(true);
+
+      const matrix = JSON.parse(matrixResult.stdout);
+
+      expect(matrix.include).toHaveLength(1);
+      expect(matrix.include[0]).toEqual({
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '11',
+        distribution: 'corretto'
+      });
+    });
+
   });
 });
