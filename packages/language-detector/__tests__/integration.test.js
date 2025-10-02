@@ -121,7 +121,7 @@ describe('Language Detection CLI Integration Tests', () => {
 
     test('should merge custom config with detected languages', async () => {
       const detectedLanguages = '["javascript", "java"]';
-      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","environment":"jdk-21"}]';
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","version":"21"}]';
 
       const result = await runCreateMatrix(detectedLanguages, customConfig);
 
@@ -136,7 +136,7 @@ describe('Language Detection CLI Integration Tests', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './gradlew build',
-        environment: 'jdk-21'
+        version: '21'
       });
 
       // Should use default config for javascript
@@ -210,7 +210,7 @@ describe('Language Detection CLI Integration Tests', () => {
       const detectedLanguages = '["javascript", "java"]';
 
       // Create matrix with custom Java config
-      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./mvnw compile","environment":"jdk-17"}]';
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./mvnw compile","version":"17"}]';
       const matrixResult = await runCreateMatrix(detectedLanguages, customConfig);
 
       expect(matrixResult.success).toBe(true);
@@ -223,7 +223,7 @@ describe('Language Detection CLI Integration Tests', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './mvnw compile',
-        environment: 'jdk-17'
+        version: '17'
       });
 
       // Should use default config for JavaScript
@@ -231,6 +231,27 @@ describe('Language Detection CLI Integration Tests', () => {
       expect(jsEntry).toEqual({
         language: 'javascript-typescript',
         scanner: 'codeql'
+      });
+    });
+
+    test('should create matrix with custom version and distribution', async () => {
+      const detectedLanguages = '["java"]';
+
+      // Create matrix with custom Java config using Corretto distribution
+      const customConfig = '[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build","version":"11","distribution":"corretto"}]';
+      const matrixResult = await runCreateMatrix(detectedLanguages, customConfig);
+
+      expect(matrixResult.success).toBe(true);
+
+      const matrix = JSON.parse(matrixResult.stdout);
+
+      expect(matrix.include).toHaveLength(1);
+      expect(matrix.include[0]).toEqual({
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '11',
+        distribution: 'corretto'
       });
     });
   });

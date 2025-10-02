@@ -20,6 +20,12 @@ inputs:
     description: 'Build command for the language'
     required: false
     default: null
+  version:
+    description: 'Language/runtime version to use (e.g., 17, 21 for Java; 3.9, 3.10 for Python; 16, 18 for Node.js)'
+    required: false
+  distribution:
+    description: 'Language/runtime distribution to use (e.g., temurin, zulu, corretto for Java; pyenv for Python)'
+    required: false
 
 runs:
   using: 'composite'
@@ -31,6 +37,8 @@ runs:
         echo "Language: ${{ inputs.language }}"
         echo "Build mode: ${{ inputs.build_mode }}"
         echo "Build command: ${{ inputs.build_command }}"
+        echo "Version: ${{ inputs.version }}"
+        echo "Distribution: ${{ inputs.distribution }}"
         echo "Paths ignored: ${{ inputs.paths_ignored }}"
         echo "Rules excluded: ${{ inputs.rules_excluded }}"
         echo "=================================================================="
@@ -48,12 +56,12 @@ runs:
       run: corepack enable
       shell: bash
 
-    - name: Set up JDK 21 for Java/Kotlin
-      if: ${{ inputs.language == 'java-kotlin' }}
+    - name: Set up JDK for Java/Kotlin
+      if: ${{ (inputs.language == 'java-kotlin' || inputs.language == 'java') && inputs.version != '' }}
       uses: actions/setup-java@v4
       with:
-        java-version: '21'
-        distribution: 'temurin'
+        java-version: ${{ inputs.version }}
+        distribution: ${{ inputs.distribution || 'temurin' }}
 
     - name: Copy CodeQL Action Files to Workspace Root
       run: |

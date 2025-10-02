@@ -101,7 +101,7 @@ describe('createMatrix', () => {
         language: 'java-kotlin',
         build_mode: 'manual',
         build_command: './gradlew build',
-        environment: 'jdk-21'
+        version: '21'
       }
     ];
 
@@ -114,7 +114,7 @@ describe('createMatrix', () => {
           language: 'java-kotlin',
           build_mode: 'manual',
           build_command: './gradlew build',
-          environment: 'jdk-21'
+          version: '21'
         }
       ]
     });
@@ -138,6 +138,58 @@ describe('createMatrix', () => {
           language: 'java',
           build_mode: 'manual',
           build_command: './gradlew build'
+        }
+      ]
+    });
+  });
+
+  test('handles custom version only (no distribution)', () => {
+    const detectedLanguages = ['java'];
+    const customConfig = [
+      {
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '21'
+      }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        {
+          language: 'java-kotlin',
+          build_mode: 'manual',
+          build_command: './gradlew build',
+          version: '21'
+        }
+      ]
+    });
+  });
+
+  test('handles custom version and distribution config', () => {
+    const detectedLanguages = ['java'];
+    const customConfig = [
+      {
+        language: 'java-kotlin',
+        build_mode: 'manual',
+        build_command: './gradlew build',
+        version: '17',
+        distribution: 'zulu'
+      }
+    ];
+
+    const result = createMatrix(detectedLanguages, customConfig);
+
+    expect(result).toEqual({
+      include: [
+        {
+          language: 'java-kotlin',
+          build_mode: 'manual',
+          build_command: './gradlew build',
+          version: '17',
+          distribution: 'zulu'
         }
       ]
     });
