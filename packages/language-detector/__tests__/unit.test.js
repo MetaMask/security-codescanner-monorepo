@@ -87,9 +87,9 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
-        { language: 'python', scanner: 'codeql' },
-        { language: 'java-kotlin', scanner: 'codeql', build_mode: 'manual' }
+        { language: 'javascript-typescript' },
+        { language: 'python' },
+        { language: 'java-kotlin', build_mode: 'manual', build_command: './mvnw compile' }
       ]
     });
   });
@@ -109,7 +109,7 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
+        { language: 'javascript-typescript' },
         {
           language: 'java-kotlin',
           build_mode: 'manual',
@@ -214,7 +214,7 @@ describe('createMatrix', () => {
   test('handles empty inputs', () => {
     expect(createMatrix([])).toEqual({ include: [] });
     expect(createMatrix(['javascript'], [])).toEqual({
-      include: [{ language: 'javascript-typescript', scanner: 'codeql' }]
+      include: [{ language: 'javascript-typescript' }]
     });
   });
 
@@ -222,11 +222,10 @@ describe('createMatrix', () => {
     const detectedLanguages = ['javascript', 'typescript'];
     const result = createMatrix(detectedLanguages);
 
-    // Should only have one entry since both map to javascript-typescript
+    // Should only have one entry since both map to javascript-typescript and duplicates are removed
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' },
-        { language: 'javascript-typescript', scanner: 'codeql' }
+        { language: 'javascript-typescript' }
       ]
     });
   });
@@ -237,7 +236,7 @@ describe('createMatrix', () => {
 
     expect(result).toEqual({
       include: [
-        { language: 'javascript-typescript', scanner: 'codeql' }
+        { language: 'javascript-typescript' }
       ]
     });
   });
