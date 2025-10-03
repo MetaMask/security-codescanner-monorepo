@@ -1,5 +1,9 @@
 name: 'Security Code Scanner'
 
+# Minimal permissions - jobs override as needed
+permissions:
+  contents: read
+
 on:
   workflow_call:
     inputs:
@@ -134,7 +138,6 @@ jobs:
     steps:
       - name: Show Language Detection Results
         env:
-          GITHUB_TOKEN: ${{ github.token }}
           REPO: ${{ inputs.repo }}
           DETECTED_LANGUAGES: ${{ needs.setup.outputs.languages }}
           DETECTED_MATRIX: ${{ needs.setup.outputs.matrix }}
