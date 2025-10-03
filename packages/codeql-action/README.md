@@ -1,70 +1,233 @@
-# AppSec CodeQL GitHub Action
+# CodeQL Action
+
+Custom CodeQL analysis action with repository-specific configurations and custom query suites.
 
 ## Overview
 
-The AppSec CodeQL GitHub Action is tailored for performing CodeQL scans on repositories with the capability of using custom rule sets and configurations. It supports flexible configurations for different repositories, stored in the `repo-configs` directory, and utilizes custom CodeQL query suites from the `query-suites` directory.
+This action provides flexible CodeQL scanning with:
+- **Automatic language detection** via GitHub API
+- **Repository-specific configurations** in `repo-configs/`
+- **Custom query suites** for specialized security analysis
+- **Per-language build settings** (version, distribution, build commands)
+
+## Architecture
+
+The action works as part of the security scanning workflow:
+
+1. **Language detector** creates scan matrix from detected languages
+2. **Config loader** reads repo-specific config from `repo-configs/<repo-name>.js`
+3. **Config generator** merges inputs with repo config and generates CodeQL config
+4. **CodeQL** performs analysis and uploads SARIF results
 
 ## Inputs
 
-- **`repo`**: (Required) The full name of the repository to be scanned.
-- **`paths_ignored`**: Comma delimited paths to be ignored by the scan.
-- **`rules_excluded`**: Comma delimited CodeQl rule ids to be excluded.
+| Input | Required | Description |
+|-------|----------|-------------|
+| `repo` | ✅ | Repository name (format: `owner/repo`) |
+| `language` | ✅ | Language to scan (e.g., `javascript-typescript`, `java-kotlin`, `python`) |
+| `paths_ignored` | ❌ | Newline-delimited paths to ignore |
+| `rules_excluded` | ❌ | Newline-delimited CodeQL rule IDs to exclude |
+| `build_mode` | ❌ | Build mode: `none`, `autobuild`, or `manual` |
+| `build_command` | ❌ | Build command for `manual` build mode |
+| `version` | ❌ | Language/runtime version (e.g., `21` for Java, `3.10` for Python) |
+| `distribution` | ❌ | Distribution (e.g., `temurin`, `zulu` for Java) |
 
 ## Usage
 
-To integrate this action into your workflow, create a `.yml` file in the `.github/workflows` directory of your repository and follow the steps below:
+### Via Reusable Workflow (Recommended)
 
-1. **Workflow Setup**:
-   Add the following content to your workflow file:
+```yaml
+name: Security Scan
+on: [push, pull_request]
 
-   ```yaml
-   name: CodeQL Analysis
+jobs:
+  security:
+    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
+    with:
+      repo: ${{ github.repository }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+```
 
-   on:
-     push:
-       branches: [main]
-     pull_request:
-       branches: [main]
+### Direct Action Usage
 
-   jobs:
-     codeql-analysis:
-       runs-on: ubuntu-latest
+```yaml
+- name: Run CodeQL Analysis
+  uses: witmicko/security-code-scanner-monorepo/packages/codeql-action@main
+  with:
+    repo: ${{ github.repository }}
+    language: javascript-typescript
+    paths_ignored: |
+      test/
+      docs/
+    rules_excluded: |
+      js/log-injection
+```
 
-       steps:
-         - name: Checkout Code
-           uses: actions/checkout@v4
-           with:
-             repository: ${{ github.repository }}
+## Repository Configuration
 
-         - name: Run AppSec CodeQL Analysis
-           uses: <username>/codeql-action@v1.0.0
-           with:
-             repo: ${{ github.repository }}
-             paths_ignored: |
-               test/
-               data/
-             rules_excluded: |
-               js/foo
-               js/bar
-   ```
+### File-Based Config
 
-2. **Configurations**:
-   Place your custom configurations for repositories in the `repo-configs` directory and your CodeQL query suites in the `query-suites` directory. These will be utilized by the action to tailor the scan according to your specific requirements.
+Create `repo-configs/<repo-name>.js`:
 
-## Features
+```javascript
+const config = {
+  // Paths to ignore during scan
+  pathsIgnored: ['test', 'vendor', 'node_modules'],
 
-- **Customized CodeQL Scans**: Ability to run scans with custom configurations and query suites.
-- **Flexible Setup**: Supports multiple repositories with different configurations.
-- **SARIF File Upload**: Automated process for uploading SARIF files for analysis reporting.
+  // Rule IDs to exclude
+  rulesExcluded: ['js/log-injection', 'js/unsafe-dynamic-method-access'],
 
-## Contributing
+  // Per-language configuration
+  languages_config: [
+    {
+      language: 'java-kotlin',
+      build_mode: 'manual',
+      build_command: './gradlew :coordinator:app:build',
+      version: '21',
+      distribution: 'temurin'
+    },
+    {
+      language: 'javascript-typescript',
+      // Uses default config (no build needed)
+    },
+    {
+      language: 'cpp',
+      ignore: true  // Skip C++ scanning
+    }
+  ],
 
-Contributions are welcome to enhance and expand the functionality of this action.
+  // CodeQL query suites
+  queries: [
+    { name: 'Base security queries', uses: './query-suites/base.qls' },
+    { name: 'Custom queries', uses: './custom-queries/query-suites/custom-queries.qls' }
+  ]
+};
+
+export default config;
+```
+
+### Configuration Priority
+
+1. **Workflow input** (highest priority) - overrides everything
+2. **Repo config file** - `repo-configs/<repo-name>.js`
+3. **Default config** - `repo-configs/default.js`
+
+### Default Configurations
+
+The action includes sensible defaults for common languages:
+
+```javascript
+const DEFAULT_CONFIGS = {
+  'javascript': { language: 'javascript-typescript' },
+  'typescript': { language: 'javascript-typescript' },
+  'python': { language: 'python' },
+  'go': { language: 'go' },
+  'java': {
+    language: 'java-kotlin',
+    build_mode: 'manual',
+    build_command: './mvnw compile'
+  },
+  'cpp': { language: 'cpp' },
+  'csharp': { language: 'csharp' },
+  'ruby': { language: 'ruby' }
+};
+```
+
+## Supported Languages
+
+| GitHub Language | CodeQL Language | Build Required |
+|-----------------|-----------------|----------------|
+| JavaScript | `javascript-typescript` | No |
+| TypeScript | `javascript-typescript` | No |
+| Python | `python` | No |
+| Java | `java-kotlin` | Yes (defaults to `./mvnw compile`) |
+| Kotlin | `java-kotlin` | Yes |
+| Go | `go` | No |
+| C/C++ | `cpp` | Yes |
+| C# | `csharp` | Yes |
+| Ruby | `ruby` | No |
+
+## Build Modes
+
+### `none`
+No build needed (interpreted languages like JavaScript, Python)
+
+### `autobuild`
+CodeQL automatically detects and runs build (works for simple projects)
+
+### `manual`
+Specify exact build command:
+```javascript
+{
+  language: 'java-kotlin',
+  build_mode: 'manual',
+  build_command: './gradlew clean build'
+}
+```
+
+## Custom Query Suites
+
+Query suites define which CodeQL queries to run:
+
+**Built-in suites:**
+- `./query-suites/base.qls` - Standard security queries
+- `./query-suites/linea-monorepo.qls` - Project-specific queries
+
+**Custom queries:**
+- Checked out from `metamask/CodeQL-Queries` repository
+- Available at `./custom-queries/query-suites/custom-queries.qls`
+
+## Troubleshooting
+
+### Config not loading
+- Filename must match repo: `owner/repo` → `repo.js`
+- Must use ESM: `export default config`
+- Check logs: `[config-loader] Loading config for repository: ...`
+
+### Build failures
+- Verify `build_command` works locally
+- Check Java version matches `version` input
+- Review build step logs in Actions
+
+### Language not detected
+- Check GitHub language stats (repo → Insights → Languages)
+- Add language manually via `languages_config` in repo config
+- Verify language mapping in `language-detector/src/job-configurator.js`
+
+### SARIF upload errors
+- Ensure workflow has `security-events: write` permission
+- Check SARIF file is generated in `${{ steps.codeql-analysis.outputs.sarif-output }}`
+- Review CodeQL analysis logs
+
+## Security
+
+See [SECURITY.md](../../SECURITY.md) for:
+- Threat model and security boundaries
+- Input validation approach
+- Token permissions model
+
+## Development
+
+### Testing Config Changes
+
+```bash
+# Run config generator locally
+cd packages/codeql-action
+REPO=owner/repo LANGUAGE=javascript node scripts/generate-config.js
+
+# Validate generated config
+cat codeql-config-generated.yml
+```
+
+### Adding New Language Support
+
+1. Add to `LANGUAGE_MAPPING` in `language-detector/src/job-configurator.js`
+2. Add default config in `language-detector/src/job-configurator.js` → `DEFAULT_CONFIGS`
+3. Update this README's supported languages table
 
 ## License
 
-Specify your license here. Typically, projects include a [MIT License](LICENSE).
-
----
-
-This template is designed to be modified according to your specific requirements and project details. Make sure to replace placeholders with actual values and adjust the instructions based on how your action is set up and used.
+ISC
