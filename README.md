@@ -1,190 +1,231 @@
 # Security Code Scanner Monorepo
 
-> Unified repository for security code scanning tools
+> Unified security code scanning system with CodeQL and Semgrep
 
 ## 🏗️ Architecture
 
-This monorepo consolidates three previously separate security scanning tools:
+This monorepo provides a reusable security scanning workflow with automatic language detection and parallel execution:
 
-- **`packages/main-action/`** - Main security scanner orchestrator (formerly `action-security-code-scanner`)
-- **`packages/codeql-action/`** - Custom CodeQL analysis wrapper (formerly `CodeQL-action`)
-- **`packages/semgrep-action/`** - Semgrep pattern-based scanner (formerly `semgrep-action`)
+- **`.github/workflows/security-scan.yml`** - Main reusable workflow (orchestrator)
+- **`packages/language-detector/`** - Detects languages and creates scan matrix
+- **`packages/codeql-action/`** - Custom CodeQL analysis with repo-specific configs
+- **`packages/semgrep-action/`** - Semgrep pattern-based scanner
 
 ## 🚀 Quick Start
 
-### For End Users (Using the Scanner)
+### Using the Scanner (Recommended)
 
-**Recommended: Reusable Workflows**
+Add to your repository's `.github/workflows/security.yml`:
 
 ```yaml
-# .github/workflows/security.yml
 name: 'Security Scan'
 on: [push, pull_request]
 
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@v1
+    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ github.repository }}
-      languages: '["javascript", "typescript", "python"]'
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
 ```
 
-**Alternative: Direct Action Usage**
+The workflow will:
+1. Auto-detect languages in your repository
+2. Load repo-specific config from `repo-configs/` (or use defaults)
+3. Run CodeQL and Semgrep scans in parallel
+4. Upload SARIF results to GitHub Security tab
+
+### Custom Configuration
+
+**Option 1: File-based config (recommended)**
+
+Create `repo-configs/<your-repo-name>.js` in this monorepo:
+
+```javascript
+const config = {
+  pathsIgnored: ['test', 'docs'],
+  rulesExcluded: ['js/log-injection'],
+  languages_config: [
+    {
+      language: 'java-kotlin',
+      build_mode: 'manual',
+      build_command: './gradlew build',
+      version: '21',
+      distribution: 'temurin'
+    }
+  ],
+  queries: [
+    { name: 'Security queries', uses: './query-suites/base.qls' },
+    { name: 'Custom queries', uses: './custom-queries/query-suites/custom-queries.qls' }
+  ]
+};
+
+export default config;
+```
+
+**Option 2: Workflow input (overrides file config)**
 
 ```yaml
-- name: Security Code Scanner
-  uses: witmicko/security-scanner-monorepo/packages/main-action@v1
-  with:
-    repo: ${{ github.repository }}
-    slack_webhook: ${{ secrets.APPSEC_BOT_SLACK_WEBHOOK }}
-```
-
-### For Contributors (Developing the Scanner)
-
-```bash
-# Install all dependencies
-yarn install
-
-# Run linting across all packages
-yarn lint
-
-# Validate all GitHub Actions
-yarn validate
-
-# Check package configurations
-yarn check
-
-# Clean build artifacts
-yarn clean
+jobs:
+  security-scan:
+    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
+    with:
+      repo: ${{ github.repository }}
+      languages_config: |
+        [
+          {
+            "language": "java-kotlin",
+            "build_mode": "manual",
+            "build_command": "./gradlew build",
+            "version": "21"
+          }
+        ]
+      paths_ignored: 'test,docs'
+      rules_excluded: 'js/log-injection,py/sql-injection'
 ```
 
 ## 📦 Package Structure
 
 ```
 security-scanner-monorepo/
+├── .github/workflows/
+│   └── security-scan.yml        # Main reusable workflow
 ├── packages/
-│   ├── main-action/          # Main orchestrator
-│   ├── codeql-action/        # CodeQL scanning
-│   └── semgrep-action/       # Semgrep scanning
-├── shared/                   # Common utilities
-│   ├── configs/              # Shared configurations
-│   ├── scripts/              # Common scripts
-│   └── types/                # Shared TypeScript types
-├── .github/workflows/        # Reusable workflows
-└── docs/                     # Documentation
+│   ├── language-detector/       # Language detection & matrix creation
+│   ├── codeql-action/          # CodeQL scanner
+│   │   ├── repo-configs/       # Repository-specific configs
+│   │   ├── query-suites/       # CodeQL query suites
+│   │   ├── scripts/            # Config generation scripts
+│   │   └── src/                # Shared utilities
+│   └── semgrep-action/         # Semgrep scanner
+└── SECURITY.md                  # Security model documentation
 ```
 
-## 🔧 Available Scripts
+## 🔧 Development
 
-### Quality & Validation
-
-- `yarn lint` - Run linting and formatting checks across all packages
-- `yarn lint:fix` - Auto-fix linting and formatting issues
-- `yarn validate` - Validate all GitHub Action files for syntax and completeness
-- `yarn check` - Validate package configurations and required fields
-
-### Development
-
-- `yarn build` - Build all packages
-- `yarn test` - Run tests across all packages
-- `yarn clean` - Clean build artifacts and temporary files
-- `yarn install:all` - Install dependencies with immutable lockfile
-
-### Workspace Management
-
-- `yarn workspace <name> <command>` - Run command in specific package
-- `yarn workspaces foreach run <command>` - Run command in all packages
-
-## 📚 Usage
-
-### For Repository Scanning
-
-Use the main security scanner action in your workflow:
-
-```yaml
-- name: Security Code Scanner
-  uses: witmicko/security-scanner-monorepo/packages/main-action@v1
-  with:
-    repo: ${{ github.repository }}
-    slack_webhook: ${{ secrets.APPSEC_BOT_SLACK_WEBHOOK }}
-```
-
-### Individual Scanners
-
-You can also use individual scanners directly:
-
-```yaml
-# CodeQL only
-- uses: witmicko/security-scanner-monorepo/packages/codeql-action@v1
-
-# Semgrep only
-- uses: witmicko/security-scanner-monorepo/packages/semgrep-action@v1
-```
-
-## 🏗️ Development
-
-This monorepo uses Yarn workspaces for dependency management and package coordination.
-
-### Adding Dependencies
+### Setup
 
 ```bash
-# Add to root (affects all packages)
-yarn add -D <package>
+# Install dependencies
+yarn install
 
-# Add to specific package
-yarn workspace @witmicko/main-action add <package>
+# Run linting
+yarn lint
+
+# Fix formatting
+yarn lint:fix
 ```
 
-### Running Package-Specific Commands
+### Testing
+
+```bash
+# Test language detector
+yarn workspace @codescanner/language-detector test
+
+# Test with integration tests
+yarn workspace @codescanner/language-detector test:integration
+```
+
+### Workspace Commands
 
 ```bash
 # Run command in specific package
-yarn workspace @witmicko/main-action <command>
+yarn workspace @codescanner/language-detector <command>
 
 # Run command in all packages
 yarn workspaces foreach run <command>
 ```
 
-## 📚 Documentation
+## 📚 Configuration Schema
 
-- **[Usage Guide](./docs/USAGE.md)** - Comprehensive usage instructions and examples
-- **[Migration Guide](./docs/MIGRATION.md)** - How to migrate from separate repositories
-- **[Migration Status](./MIGRATION_STATUS.md)** - Current migration progress and status
+### Repo Config File (`repo-configs/<repo-name>.js`)
 
-### Package Documentation
+```javascript
+{
+  // Paths to ignore during scan
+  pathsIgnored: ['test', 'vendor'],
 
-- [Main Action README](./packages/main-action/README.md) - Security scanner orchestrator
-- [CodeQL Action README](./packages/codeql-action/README.md) - Custom CodeQL analysis
-- [Semgrep Action README](./packages/semgrep-action/README.md) - Pattern-based security analysis
+  // Rule IDs to exclude
+  rulesExcluded: ['js/log-injection'],
+
+  // Per-language configuration
+  languages_config: [
+    {
+      language: 'java-kotlin',      // CodeQL language
+      ignore: false,                 // Skip this language (optional)
+      build_mode: 'manual',          // 'none', 'autobuild', or 'manual'
+      build_command: './gradlew build',
+      version: '21',                 // Language/runtime version
+      distribution: 'temurin'        // Distribution (Java/Node.js)
+    }
+  ],
+
+  // CodeQL query suites
+  queries: [
+    { name: 'Base queries', uses: './query-suites/base.qls' }
+  ]
+}
+```
+
+### Supported Languages
+
+**CodeQL:**
+- JavaScript/TypeScript → `javascript-typescript`
+- Python → `python`
+- Java/Kotlin → `java-kotlin`
+- Go → `go`
+- C/C++ → `cpp`
+- C# → `csharp`
+- Ruby → `ruby`
+
+**Semgrep:** All languages (language-agnostic pattern matching)
 
 ## 🎯 Key Features
 
-### ✅ Multi-Language Support
-
-- **CodeQL:** JavaScript, TypeScript, Python, Java, C#, C/C++, Go, Ruby
-- **Semgrep:** Language-agnostic pattern matching
+### ✅ Automatic Language Detection
+- Detects languages via GitHub API
+- Maps to appropriate scanners
+- Configurable per-repository
 
 ### ✅ Optimized Execution
+- Parallel scanning per language
+- Matrix-based job strategy
+- Fail-fast for ignored languages
 
-- **Before:** 3 languages = 6 scans (3 CodeQL + 3 Semgrep)
-- **After:** 3 languages = 4 scans (3 CodeQL + 1 Semgrep) - 33% reduction
+### ✅ Flexible Configuration
+- File-based configs (single source of truth)
+- Workflow input overrides
+- Per-language build settings
 
-### ✅ Advanced Workflows
+### ✅ Security First
+- Minimal token permissions (`contents: read`, `security-events: write`)
+- Input validation and sanitization
+- See [SECURITY.md](./SECURITY.md) for threat model
 
-- **Reusable workflows** for better maintainability
-- **Language-specific SARIF** categorization (`codeql-javascript`, `codeql-python`, etc.)
-- **Parallel execution** for faster results
+## 🔍 Troubleshooting
 
-### ✅ Enterprise Features
+### Language not detected
+- Check GitHub's language detection (repo insights → languages)
+- Ensure language is in `LANGUAGE_MAPPING` in `language-detector/src/job-configurator.js`
+- Add manual `languages_config` in workflow input
 
-- Slack notifications on scan failures
-- Metrics and analytics integration
-- Customizable path and rule exclusions
-- Repository-specific configurations
+### Build failures
+- Verify `build_command` in repo config
+- Check if correct `version` and `distribution` are specified
+- Review CodeQL build logs in Actions
+
+### Config not loading
+- Repo config filename must match repo name: `owner/repo` → `repo.js`
+- Ensure config file exports with `export default config`
+- Check config-loader logs in workflow output
+
+### Permissions errors
+- Add required permissions to calling workflow:
+  ```yaml
+  permissions:
+    actions: read
+    contents: read
+    security-events: write
+  ```
 
 ## 📄 License
 
@@ -192,4 +233,10 @@ ISC
 
 ## 🤝 Contributing
 
-This monorepo uses Yarn workspaces and follows conventional patterns. See individual package READMEs for specific contribution guidelines.
+See [SECURITY.md](./SECURITY.md) for security model and [REVIEW_TRACKING.md](./REVIEW_TRACKING.md) for current development status.
+
+### Package Documentation
+
+- [CodeQL Action README](./packages/codeql-action/README.md)
+- [Language Detector README](./packages/language-detector/README.md)
+- [Semgrep Action README](./packages/semgrep-action/README.md)

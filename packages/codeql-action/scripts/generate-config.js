@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import ejs from 'ejs';
 import { loadRepoConfig } from '../src/config-loader.js';
+import { validateRequiredInputs, sanitizePath, sanitizeRuleId, escapeOutput } from '../src/validation.js';
 
 // ESM equivalent of __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -13,26 +14,6 @@ const outputFile = process.env.GITHUB_OUTPUT;
 const template = fs.readFileSync('config/codeql-template.yml', 'utf8');
 
 const { REPO, LANGUAGE, BUILD_MODE, BUILD_COMMAND, VERSION, DISTRIBUTION, PATHS_IGNORED, RULES_EXCLUDED } = process.env;
-
-// Validate required inputs
-if (!REPO || !LANGUAGE) {
-  throw new Error('Missing required inputs: REPO and LANGUAGE are required');
-}
-
-// Sanitize path strings - remove shell metacharacters (good hygiene, prevents accidental issues)
-const sanitizePath = (pathStr) => pathStr.replace(/[;&|`$(){}[\]<>]/g, '');
-
-// Sanitize rule IDs - allow only alphanumeric, hyphens, slashes, and underscores
-const sanitizeRuleId = (ruleId) => ruleId.replace(/[^a-zA-Z0-9\-/_]/g, '');
-
-// Escape output for GITHUB_OUTPUT - prevent workflow variable injection
-const escapeOutput = (value) => {
-  if (!value) return '';
-  return String(value)
-    .replace(/%/g, '%25')   // % must be first
-    .replace(/\r/g, '%0D')  // carriage return
-    .replace(/\n/g, '%0A'); // newline
-};
 
 const inputs = {
   repo: REPO,
@@ -48,6 +29,10 @@ const inputs = {
     ? RULES_EXCLUDED.split('\n').filter((line) => line.trim() !== '').map(sanitizeRuleId)
     : [],
 };
+
+// Validate required inputs
+validateRequiredInputs(inputs);
+
 console.log(`>>>>>inputs: `);
 console.log(JSON.stringify(inputs, null, 2));
 
