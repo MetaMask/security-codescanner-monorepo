@@ -53,7 +53,7 @@ const runCreateMatrix = (detectedLanguages, customConfig) => {
   const args = [];
   if (detectedLanguages !== undefined) args.push(detectedLanguages);
   if (customConfig !== undefined) args.push(customConfig);
-  return runScript('language-detector.js', args);
+  return runScript('job-configurator.js', args);
 };
 
 describe('Language Detection CLI Integration Tests', () => {
@@ -100,7 +100,7 @@ describe('Language Detection CLI Integration Tests', () => {
     }, 10000);
   });
 
-  describe('language-detector.js (matrix creation)', () => {
+  describe('job-configurator.js (matrix creation)', () => {
     test('should create matrix with detected languages only', async () => {
       const detectedLanguages = '["javascript", "python", "java"]';
       const result = await runCreateMatrix(detectedLanguages);
@@ -160,7 +160,7 @@ describe('Language Detection CLI Integration Tests', () => {
 
       expect(result.success).toBe(false);
       expect(result.code).toBe(1);
-      expect(result.stderr).toContain('Usage: node language-detector.js');
+      expect(result.stderr).toContain('Usage: node job-configurator.js');
     });
 
     test('should handle invalid JSON gracefully', async () => {

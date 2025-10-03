@@ -5,7 +5,7 @@
  * Usage: node detect-languages.js <owner/repo> [github_token]
  */
 
-import { fetchGitHubLanguages, detectLanguages } from './language-detector.js';
+import { fetchGitHubLanguages, detectLanguages } from './job-configurator.js';
 
 async function main() {
   const [repo, token] = process.argv.slice(2);
