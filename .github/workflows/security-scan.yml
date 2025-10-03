@@ -9,7 +9,9 @@ on:
         type: string
       languages_config:
         description: |
-          JSON array of language configurations. Auto-detects languages, uses config if provided.
+          Optional: JSON array of language configurations to override/supplement repo config file.
+          Auto-detects languages and loads repo-specific config from packages/codeql-action/repo-configs/${repo}.cjs.
+          Workflow input takes precedence over file config for same languages.
           Example:
           [
             {
@@ -56,7 +58,9 @@ on:
         default: 'witmicko/security-code-scanner-monorepo'
       languages_config:
         description: |
-          JSON array of language configurations. Auto-detects languages, uses config if provided.
+          Optional: JSON array of language configurations to override/supplement repo config file.
+          Auto-detects languages and loads repo-specific config from packages/codeql-action/repo-configs/${repo}.cjs.
+          Workflow input takes precedence over file config for same languages.
           Example:
           [
             {

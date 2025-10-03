@@ -1,7 +1,13 @@
-const fs = require('fs');
-const path = require('path');
-const ejs = require('ejs');
-const { log, debug } = require('console');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import ejs from 'ejs';
+import { loadRepoConfig } from '../src/config-loader.js';
+
+// ESM equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const outputFile = process.env.GITHUB_OUTPUT;
 const template = fs.readFileSync('config/codeql-template.yml', 'utf8');
@@ -24,18 +30,6 @@ const inputs = {
 console.log(`>>>>>inputs: `);
 console.log(JSON.stringify(inputs, null, 2));
 
-const loadConfig = (repo) => {
-  console.log(`>>>>>repo ${repo}`);
-  const repoName = repo.split('/')[1];
-  const repoConfigPath = path.join('./repo-configs/' + repoName + '.js');
-  if (!fs.existsSync(repoConfigPath)) {
-    console.warn(`No config found for "${repo}", using default config`);
-    return require('../repo-configs/default.cjs');
-  }
-  const config = require(path.join('..', repoConfigPath));
-  return config;
-};
-
 const debugConfig = (config) => {
   console.log('>>>>> config <<<<<');
   console.log(JSON.stringify(config, null, 2));
@@ -57,11 +51,8 @@ const applyLanguageConfigFallbacks = (inputs, config) => {
     return inputs;
   }
 
-  // Check if language should be ignored
-  if (languageConfig.ignore === true) {
-    console.log(`Language "${inputs.language}" is marked to be ignored, skipping analysis`);
-    return { ...inputs, shouldIgnore: true };
-  }
+  // Note: Ignore checking is now handled by language-detector during matrix creation
+  // Languages marked as ignored won't appear in the matrix, so we don't need to check here
 
   // Apply fallbacks for missing inputs
   const inputsWithFallbacks = { ...inputs };
@@ -89,7 +80,8 @@ const applyLanguageConfigFallbacks = (inputs, config) => {
   return inputsWithFallbacks;
 };
 
-const config = loadConfig(inputs.repo);
+// Main execution - use top-level await (Node.js 14.8+)
+const config = await loadRepoConfig(inputs.repo, path.join(__dirname, '..', 'repo-configs'));
 debugConfig(config);
 
 // Apply language-specific config fallbacks
@@ -105,7 +97,6 @@ fs.appendFileSync(outputFile, `build_mode=${finalInputs.buildMode || ''}\n`);
 fs.appendFileSync(outputFile, `build_command=${finalInputs.buildCommand || ''}\n`);
 fs.appendFileSync(outputFile, `version=${finalInputs.version || ''}\n`);
 fs.appendFileSync(outputFile, `distribution=${finalInputs.distribution || ''}\n`);
-fs.appendFileSync(outputFile, `should_ignore=${finalInputs.shouldIgnore ? 'true' : 'false'}\n`);
 
 const output = ejs.render(template, {
   pathsIgnored: [...config.pathsIgnored, ...finalInputs.pathsIgnored],

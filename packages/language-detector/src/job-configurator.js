@@ -2,6 +2,8 @@
  * Language detection and matrix generation for code scanning
  */
 
+import { loadRepoConfig } from '../../codeql-action/src/config-loader.js';
+
 /**
  * Maps GitHub language names to CodeQL scanner language names
  */
@@ -154,18 +156,70 @@ export function createMatrix(detectedLanguages, languagesConfig = []) {
 }
 
 // CLI functionality for when this script is run directly
-function main() {
-  const [detectedLanguagesJson, languagesConfigJson] = process.argv.slice(2);
+async function main() {
+  const [detectedLanguagesJson, languagesConfigJson, repo, configDir] = process.argv.slice(2);
 
   if (!detectedLanguagesJson) {
-    console.error('Usage: node job-configurator.js <detected_languages_json> [languages_config_json]');
-    console.error('Example: node job-configurator.js \'{"Java": 1000, "JavaScript": 500}\' \'[{"language":"java","version":"21"}]\'');
+    console.error('Usage: node job-configurator.js <detected_languages_json> [languages_config_json] [repo] [config_dir]');
+    console.error('Example: node job-configurator.js \'{"Java": 1000, "JavaScript": 500}\' \'[{"language":"java","version":"21"}]\' \'owner/repo\' \'/path/to/configs\'');
     process.exit(1);
   }
 
   try {
     const githubLanguagesOrArray = JSON.parse(detectedLanguagesJson);
-    const languagesConfig = languagesConfigJson ? JSON.parse(languagesConfigJson) : [];
+    let languagesConfig = languagesConfigJson ? JSON.parse(languagesConfigJson) : [];
+
+    // Load repo-specific config from file if repo and configDir are provided
+    if (repo && configDir) {
+      console.error(`=== LOADING REPO CONFIG ===`);
+      console.error(`Repository: ${repo}`);
+      console.error(`Config directory: ${configDir}`);
+
+      // Use shared config loader from codeql-action package
+      const repoConfig = await loadRepoConfig(repo, configDir);
+      const fileLanguagesConfig = repoConfig.languages_config || [];
+
+      console.error(`File-based languages_config:`, fileLanguagesConfig);
+      console.error(`Workflow input languages_config:`, languagesConfig);
+
+      // Merge configs: workflow input takes precedence over file config
+      // Create a map of file configs by language
+      const fileConfigMap = new Map();
+      for (const config of fileLanguagesConfig) {
+        if (config.language) {
+          fileConfigMap.set(config.language, config);
+        }
+      }
+
+      // Create a map of workflow input configs by language
+      const inputConfigMap = new Map();
+      for (const config of languagesConfig) {
+        if (config.language) {
+          inputConfigMap.set(config.language, config);
+        }
+      }
+
+      // Merge: start with file configs, then add/override with workflow inputs
+      const mergedConfigs = [...fileLanguagesConfig];
+      for (const [lang, inputConfig] of inputConfigMap.entries()) {
+        const fileConfig = fileConfigMap.get(lang);
+        if (fileConfig) {
+          // Merge: workflow input overrides file config
+          const mergedConfig = { ...fileConfig, ...inputConfig };
+          const index = mergedConfigs.findIndex(c => c.language === lang);
+          mergedConfigs[index] = mergedConfig;
+          console.error(`✓ Merged config for ${lang}:`, mergedConfig);
+        } else {
+          // New language only in workflow input
+          mergedConfigs.push(inputConfig);
+          console.error(`✓ Added workflow-only config for ${lang}:`, inputConfig);
+        }
+      }
+
+      languagesConfig = mergedConfigs;
+      console.error(`Final merged languages_config:`, languagesConfig);
+      console.error(`===========================`);
+    }
 
     // Handle both GitHub API format (object) and pre-processed array
     let detectedLanguages;
