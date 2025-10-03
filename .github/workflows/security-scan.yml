@@ -105,6 +105,11 @@ on:
         description: 'Slack webhook for notifications'
         required: false
         type: string
+      ref:
+        description: 'Branch/ref of security-codescanner-monorepo to use (for testing). Must be explicitly passed when testing from a dev branch.'
+        required: false
+        type: string
+        default: 'main'
 
 env:
   MONOREPO_PATH: .security-scanner
