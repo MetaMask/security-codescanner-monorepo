@@ -69,7 +69,7 @@ Go to Actions → Test Language Detector → Run workflow
 
 ## Architecture
 
-- `src/language-detector.js` - Core language detection and matrix logic
+- `src/job-configurator.js` - Core language detection and matrix logic
 - `src/detect-languages.js` - CLI script for language detection
 - `src/create-matrix.js` - CLI script for matrix creation
 - `__tests__/` - Jest test suite

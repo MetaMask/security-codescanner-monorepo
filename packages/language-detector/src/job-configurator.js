@@ -158,8 +158,8 @@ function main() {
   const [detectedLanguagesJson, languagesConfigJson] = process.argv.slice(2);
 
   if (!detectedLanguagesJson) {
-    console.error('Usage: node language-detector.js <detected_languages_json> [languages_config_json]');
-    console.error('Example: node language-detector.js \'{"Java": 1000, "JavaScript": 500}\' \'[{"language":"java","version":"21"}]\'');
+    console.error('Usage: node job-configurator.js <detected_languages_json> [languages_config_json]');
+    console.error('Example: node job-configurator.js \'{"Java": 1000, "JavaScript": 500}\' \'[{"language":"java","version":"21"}]\'');
     process.exit(1);
   }
 

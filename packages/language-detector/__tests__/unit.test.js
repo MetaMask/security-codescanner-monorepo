@@ -1,4 +1,4 @@
-import { detectLanguages, createMatrix } from '../src/language-detector.js';
+import { detectLanguages, createMatrix } from '../src/job-configurator.js';
 
 describe('detectLanguages', () => {
   test('detects multiple languages correctly', () => {
