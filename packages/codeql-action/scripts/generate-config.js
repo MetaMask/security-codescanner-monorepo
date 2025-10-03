@@ -104,4 +104,11 @@ const output = ejs.render(template, {
   queries: config.queries,
 });
 console.log(output);
-fs.writeFileSync('codeql-config-generated.yml', output);
+
+// Write to workspace root (or current directory if GITHUB_WORKSPACE not set)
+const outputPath = process.env.GITHUB_WORKSPACE
+  ? path.join(process.env.GITHUB_WORKSPACE, 'codeql-config-generated.yml')
+  : 'codeql-config-generated.yml';
+
+fs.writeFileSync(outputPath, output);
+console.log(`Config written to: ${outputPath}`);
