@@ -120,8 +120,8 @@ cd ${{ github.workspace }}/security-scanner-monorepo  # ❌ Hardcoded!
 ---
 
 ### 5. Input Validation & Sanitization
-**File:** `packages/codeql-action/scripts/generate-config.cjs`
-**Status:** 🔴 Open
+**File:** `packages/codeql-action/scripts/generate-config.js`
+**Status:** ✅ Complete
 **Severity:** High (Security)
 
 **Problem:**
@@ -132,29 +132,22 @@ cd ${{ github.workspace }}/security-scanner-monorepo  # ❌ Hardcoded!
 
 **Impact:** Potential command injection, runtime failures
 
-**Solution:**
-```javascript
-// Add validation
-if (!inputs.repo || !inputs.language) {
-  throw new Error('Missing required inputs: repo and language');
-}
+**Solution Implemented:**
+1. **Required field validation**: Throws error if REPO or LANGUAGE missing
+2. **Path sanitization**: `sanitizePath()` removes shell metacharacters `[;&|`$(){}[]<>]` (hygiene)
+3. **Rule ID sanitization**: `sanitizeRuleId()` allows only alphanumeric, hyphens, slashes, underscores
+4. **Safe GITHUB_OUTPUT**: `escapeOutput()` escapes `%`, `\r`, `\n` to prevent workflow injection
+5. **Minimal token permissions**:
+   - Workflow-level: `contents: read` only
+   - Job-level: `actions: read`, `contents: read`, `security-events: write`
+   - Removed unused `GITHUB_TOKEN` from debug job
+6. **Security model documentation**: Created `SECURITY.md` documenting threat model and why build command validation is intentionally omitted (real boundary is repo permissions)
 
-// Sanitize paths
-const sanitizePath = (path) => path.replace(/[;&|`$]/g, '');
-
-// Validate build command
-if (buildCommand && buildCommand.includes('rm -rf')) {
-  throw new Error('Dangerous build command detected');
-}
-
-// Safe GITHUB_OUTPUT writing
-import { appendFileSync } from 'fs';
-const output = `build_mode=${escapeOutput(finalInputs.buildMode || '')}\n`;
-appendFileSync(outputFile, output);
-```
-
-**Assignee:** _________
-**Due Date:** _________
+**Completed:** 2025-10-03
+**Files Changed:**
+- `packages/codeql-action/scripts/generate-config.js`
+- `.github/workflows/security-scan.yml`
+- `SECURITY.md` (new)
 
 ---
 
@@ -352,6 +345,42 @@ c6474e0 aa            # Non-descriptive
 
 ## 🎉 Recent Improvements
 
+### Security Hardening (2025-10-03)
+
+**Problem Solved:**
+- No input validation or sanitization
+- Token permissions not explicitly restricted
+- Unclear security model
+- GITHUB_TOKEN unnecessarily exposed in debug job
+
+**Solution Implemented:**
+- **Input validation & sanitization**:
+  - Required field validation (REPO, LANGUAGE)
+  - Path sanitization (removes shell metacharacters)
+  - Rule ID sanitization (alphanumeric + `-/_`)
+  - GITHUB_OUTPUT escaping (prevents workflow injection)
+- **Minimal token permissions**:
+  - Workflow default: `contents: read` only
+  - Jobs: `actions: read`, `contents: read`, `security-events: write`
+  - Removed unused GITHUB_TOKEN from debug job
+- **Security model documentation**:
+  - Created SECURITY.md explaining threat model
+  - Documented why build command validation is intentionally omitted
+  - Real security boundary is GitHub repo permissions, not input validation
+
+**Benefits:**
+- ✅ Prevents workflow variable injection attacks
+- ✅ Minimal token exposure (no secrets access)
+- ✅ Clear security model for contributors
+- ✅ Pragmatic approach - not security theater
+
+**Files Modified:**
+- `packages/codeql-action/scripts/generate-config.js`
+- `.github/workflows/security-scan.yml`
+- NEW: `SECURITY.md`
+
+---
+
 ### ESM Standardization: Complete Migration to ES Modules (2025-10-03)
 
 **Problem Solved:**
@@ -456,7 +485,7 @@ c6474e0 aa            # Non-descriptive
 - [x] Issue #2: Remove Hardcoded Repository Path ✅
 - [ ] Issue #3: Add Tests for CodeQL Action
 - [x] Issue #4: Clean Up Legacy Code ✅
-- [ ] Issue #5: Add Input Validation & Sanitization
+- [x] Issue #5: Add Input Validation & Sanitization ✅
 
 ### Sprint 2 (Medium Priority)
 - [x] Issue #6: Pin Custom Query Repository ✅ (Won't Fix - Intentional)
@@ -477,10 +506,11 @@ c6474e0 aa            # Non-descriptive
 ### Current State
 - **Test Coverage:** ~33% (1 of 3 packages has tests)
 - **Documentation Coverage:** ~60% (exists but outdated)
-- **Critical Issues:** 2 (3 completed)
+- **Critical Issues:** 1 (4 completed) - Only tests remaining
 - **Medium Issues:** 2 (3 completed, 1 resolved)
 - **Low Issues:** 3
 - **Architecture Quality:** Significantly improved with config refactoring ⬆️
+- **Security:** Significantly improved with input validation & sanitization ⬆️
 
 ### Target State
 - **Test Coverage:** >80% (all packages)
