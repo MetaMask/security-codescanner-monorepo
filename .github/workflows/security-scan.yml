@@ -59,7 +59,7 @@ on:
         description: 'Repository that requested the scan'
         required: true
         type: string
-        default: 'witmicko/security-code-scanner-monorepo'
+        default: 'metamask/security-codescanner-monorepo'
       languages_config:
         description: |
           Optional: JSON array of language configurations to override/supplement repo config file.
@@ -115,7 +115,7 @@ jobs:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
         with:
-          repository: witmicko/security-code-scanner-monorepo
+          repository: metamask/security-codescanner-monorepo
           path: ${{ env.MONOREPO_PATH }}
 
       - name: Checkout target repository
@@ -184,7 +184,7 @@ jobs:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
         with:
-          repository: witmicko/security-code-scanner-monorepo
+          repository: metamask/security-codescanner-monorepo
           path: ${{ env.MONOREPO_PATH }}
 
       - name: Checkout target repository
@@ -242,7 +242,7 @@ jobs:
       - name: Checkout monorepo (for local actions)
         uses: actions/checkout@v4
         with:
-          repository: witmicko/security-code-scanner-monorepo
+          repository: metamask/security-codescanner-monorepo
           path: ${{ env.MONOREPO_PATH }}
 
       - name: Checkout target repository

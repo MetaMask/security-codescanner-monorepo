@@ -1,14 +1,14 @@
 {
-  "name": "@witmicko/security-scanner-monorepo",
+  "name": "@metamask/security-codescanner-monorepo",
   "version": "1.0.0",
   "private": true,
   "description": "Security Code Scanner - Monorepo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/witmicko/security-scanner-monorepo.git"
+    "url": "https://github.com/metamask/security-codescanner-monorepo.git"
   },
   "license": "ISC",
-  "author": "witmicko",
+  "author": "metamask",
   "workspaces": [
     "packages/*"
   ],

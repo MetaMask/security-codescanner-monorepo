@@ -6,7 +6,7 @@ This repository is home to the GitHub action workflow that will run perform a se
 
 ```
 - name: Semgrep Scan
-    uses: witmicko/security-scanner-monorepo/packages/semgrep-action@main
+    uses: metamask/security-codescanner-monorepo/packages/semgrep-action@main
     with:
         # optional string parameter
         paths_ignored: ...

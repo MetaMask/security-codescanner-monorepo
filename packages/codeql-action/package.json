@@ -1,5 +1,5 @@
 {
-  "name": "@witmicko/codeql-action",
+  "name": "@metamask/codeql-action",
   "version": "1.0.0",
   "private": true,
   "description": "Custom CodeQL analysis action",
@@ -7,7 +7,7 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "https://github.com/witmicko/security-scanner-monorepo.git"
+    "url": "git@github.com:MetaMask/security-codescanner-monorepo.git"
   },
   "license": "ISC",
   "author": "witmicko",

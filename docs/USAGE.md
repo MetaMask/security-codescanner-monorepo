@@ -21,7 +21,7 @@ jobs:
       security-events: write
     steps:
       - name: Security Code Scanner
-        uses: witmicko/security-scanner-monorepo/packages/main-action@v1
+        uses: metamask/security-codescanner-monorepo/packages/main-action@v1
         with:
           repo: ${{ github.repository }}
           slack_webhook: ${{ secrets.APPSEC_BOT_SLACK_WEBHOOK }}
@@ -39,7 +39,7 @@ on:
 
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@v1
     with:
       repo: ${{ github.repository }}
       languages: '["javascript", "typescript", "python"]'
@@ -108,7 +108,7 @@ jobs:
 ```yaml
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@v1
     with:
       repo: ${{ github.repository }}
       languages: '["javascript", "python", "java"]'
@@ -126,7 +126,7 @@ jobs:
 ```yaml
 jobs:
   codeql:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-codeql.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/reusable-codeql.yml@v1
     with:
       languages: '["javascript", "typescript"]'
       repo: ${{ github.repository }}
@@ -141,7 +141,7 @@ jobs:
 ```yaml
 jobs:
   semgrep:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/reusable-semgrep.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/reusable-semgrep.yml@v1
     with:
       repo: ${{ github.repository }}
       paths_ignored: 'test/,docs/'

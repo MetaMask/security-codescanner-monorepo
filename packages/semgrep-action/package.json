@@ -1,5 +1,5 @@
 {
-  "name": "@witmicko/semgrep-action",
+  "name": "@metamask/semgrep-action",
   "version": "1.0.0",
   "private": true,
   "description": "Semgrep-based security scanning action",
@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/witmicko/security-scanner-monorepo.git"
+    "url": "git@github.com:MetaMask/security-codescanner-monorepo.git"
   },
   "license": "ISC",
   "author": "witmicko",

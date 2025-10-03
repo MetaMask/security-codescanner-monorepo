@@ -381,15 +381,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codescanner/language-detector@workspace:packages/language-detector":
-  version: 0.0.0-use.local
-  resolution: "@codescanner/language-detector@workspace:packages/language-detector"
-  dependencies:
-    "@types/jest": "npm:^29.5.8"
-    jest: "npm:^29.7.0"
-  languageName: unknown
-  linkType: soft
-
 "@isaacs/cliui@npm:^8.0.2":
   version: 8.0.2
   resolution: "@isaacs/cliui@npm:8.0.2"
@@ -757,6 +748,46 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@metamask/codeql-action@workspace:packages/codeql-action":
+  version: 0.0.0-use.local
+  resolution: "@metamask/codeql-action@workspace:packages/codeql-action"
+  dependencies:
+    "@types/jest": "npm:^29.5.8"
+    ejs: "npm:^3.1.10"
+    jest: "npm:^29.7.0"
+  languageName: unknown
+  linkType: soft
+
+"@metamask/language-detector@workspace:packages/language-detector":
+  version: 0.0.0-use.local
+  resolution: "@metamask/language-detector@workspace:packages/language-detector"
+  dependencies:
+    "@types/jest": "npm:^29.5.8"
+    jest: "npm:^29.7.0"
+  languageName: unknown
+  linkType: soft
+
+"@metamask/security-codescanner-monorepo@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@metamask/security-codescanner-monorepo@workspace:."
+  dependencies:
+    "@lavamoat/allow-scripts": "npm:^3.3.1"
+    "@lavamoat/preinstall-always-fail": "npm:^2.1.0"
+    "@metamask/auto-changelog": "npm:^4.1.0"
+    depcheck: "npm:^1.4.7"
+    prettier: "npm:^3.5.3"
+    prettier-plugin-packagejson: "npm:^2.5.10"
+    prettier-plugin-sh: "npm:^0.15.0"
+    yaml: "npm:^2.6.1"
+  languageName: unknown
+  linkType: soft
+
+"@metamask/semgrep-action@workspace:packages/semgrep-action":
+  version: 0.0.0-use.local
+  resolution: "@metamask/semgrep-action@workspace:packages/semgrep-action"
+  languageName: unknown
+  linkType: soft
+
 "@npmcli/agent@npm:^2.0.0":
   version: 2.2.2
   resolution: "@npmcli/agent@npm:2.2.2"
@@ -995,11 +1026,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 24.6.0
-  resolution: "@types/node@npm:24.6.0"
+  version: 24.6.2
+  resolution: "@types/node@npm:24.6.2"
   dependencies:
     undici-types: "npm:~7.13.0"
-  checksum: 10/7a030019c8aca6acb49a1a8dd5069a95eb313bf06a12ec9a50bb66069a6b506cf04ca89594f8e935bfded38e23e45f61a8918134abf64594213a70a87abdaa1b
+  checksum: 10/8d1e64b37abdafd3da295394235ad5357509ac0b47e6991d36b1eecacd7ad830ada60ca71b7b3598b6c8b519361fb70aab691888c378ff25e69dba5690afcc22
   languageName: node
   linkType: hard
 
@@ -1089,35 +1120,6 @@ __metadata:
   checksum: 10/8dac35e4ed992da493db8a7430e7c1a09aae1029771e3e7fd3cf2ec64a039f989baef52a47c2864041b01f3de822518c55954bc1c1f2de69690d28761197467d
   languageName: node
   linkType: hard
-
-"@witmicko/codeql-action@workspace:packages/codeql-action":
-  version: 0.0.0-use.local
-  resolution: "@witmicko/codeql-action@workspace:packages/codeql-action"
-  dependencies:
-    ejs: "npm:^3.1.10"
-  languageName: unknown
-  linkType: soft
-
-"@witmicko/security-scanner-monorepo@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@witmicko/security-scanner-monorepo@workspace:."
-  dependencies:
-    "@lavamoat/allow-scripts": "npm:^3.3.1"
-    "@lavamoat/preinstall-always-fail": "npm:^2.1.0"
-    "@metamask/auto-changelog": "npm:^4.1.0"
-    depcheck: "npm:^1.4.7"
-    prettier: "npm:^3.5.3"
-    prettier-plugin-packagejson: "npm:^2.5.10"
-    prettier-plugin-sh: "npm:^0.15.0"
-    yaml: "npm:^2.6.1"
-  languageName: unknown
-  linkType: soft
-
-"@witmicko/semgrep-action@workspace:packages/semgrep-action":
-  version: 0.0.0-use.local
-  resolution: "@witmicko/semgrep-action@workspace:packages/semgrep-action"
-  languageName: unknown
-  linkType: soft
 
 "abbrev@npm:^2.0.0":
   version: 2.0.0
@@ -1329,12 +1331,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"baseline-browser-mapping@npm:^2.8.3":
-  version: 2.8.9
-  resolution: "baseline-browser-mapping@npm:2.8.9"
+"baseline-browser-mapping@npm:^2.8.9":
+  version: 2.8.10
+  resolution: "baseline-browser-mapping@npm:2.8.10"
   bin:
     baseline-browser-mapping: dist/cli.js
-  checksum: 10/ae10470dc5c49fa085b0f52daf00124ded0a1695bb712ea9ebd87e41245764ba6a73ef035c10e624879755d45d4441f79f4ade93ccf20a146e7b01fd3a58ce51
+  checksum: 10/969bdc7a54b94dd25e544268feb54380cb34dd7a61112d27bb12f8a79099d9c6cb5aa862d784d6e096da400f7a0099249ef64e2b4b3b110ee30870802e1453e9
   languageName: node
   linkType: hard
 
@@ -1379,17 +1381,17 @@ __metadata:
   linkType: hard
 
 "browserslist@npm:^4.24.0":
-  version: 4.26.2
-  resolution: "browserslist@npm:4.26.2"
+  version: 4.26.3
+  resolution: "browserslist@npm:4.26.3"
   dependencies:
-    baseline-browser-mapping: "npm:^2.8.3"
-    caniuse-lite: "npm:^1.0.30001741"
-    electron-to-chromium: "npm:^1.5.218"
+    baseline-browser-mapping: "npm:^2.8.9"
+    caniuse-lite: "npm:^1.0.30001746"
+    electron-to-chromium: "npm:^1.5.227"
     node-releases: "npm:^2.0.21"
     update-browserslist-db: "npm:^1.1.3"
   bin:
     browserslist: cli.js
-  checksum: 10/7f732f1a9c18c510aa146270d704b7b1acab52c9922147d453eecd70c926f21d97c7ac10f5303668d444fa60bd3b8778a63a797be249b0d348af4c3a644fa530
+  checksum: 10/49add06fd753a2514d84c75a7de8d9fb3d70be675e53b72981d87f0c0ff40d8a8cd0bd92f77400381704be0bf1c9c5c65aef95d03843d69475ff55188aa12124
   languageName: node
   linkType: hard
 
@@ -1477,10 +1479,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001741":
-  version: 1.0.30001746
-  resolution: "caniuse-lite@npm:1.0.30001746"
-  checksum: 10/bb9238b08a947baf318c385d43f7ae771c80b265d21821333efc894306e6da60e47656015a1a23e5998133cad9ad022942ec0c2ba04e89e936f4a8343875b84c
+"caniuse-lite@npm:^1.0.30001746":
+  version: 1.0.30001747
+  resolution: "caniuse-lite@npm:1.0.30001747"
+  checksum: 10/b101dc4b13cec3827de6eb44ddda93285d1a93d1396b581c96574e4a635b7fb5d8518086ea57be85d05c7e9af70e27c4e5e0994cbaf9c98771a8a16b000c04fa
   languageName: node
   linkType: hard
 
@@ -1781,10 +1783,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:^1.5.218":
-  version: 1.5.227
-  resolution: "electron-to-chromium@npm:1.5.227"
-  checksum: 10/984f27f6571aaebe236b4c0837bccc933dc9211cefd6857c68de5ecfd83c32a25512da255fabea1db0d14374e1890fc941af88dc533c3dc2cb82c0cc50527f24
+"electron-to-chromium@npm:^1.5.227":
+  version: 1.5.230
+  resolution: "electron-to-chromium@npm:1.5.230"
+  checksum: 10/af1c5b6b7b68adb6dd61e7572c4f43e735523057b453967f3e926875022267d334030f799058934373752f3de61a93cfdd47431f43c22404d81806d1f68226b5
   languageName: node
   linkType: hard
 

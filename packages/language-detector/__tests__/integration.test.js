@@ -59,7 +59,7 @@ const runCreateMatrix = (detectedLanguages, customConfig) => {
 describe('Language Detection CLI Integration Tests', () => {
   describe('detect-languages.js', () => {
     test('should detect languages for a real repository', async () => {
-      const result = await runDetectLanguages('witmicko/lll');
+      const result = await runDetectLanguages('consensys/linea-monorepo/lll');
 
       expect(result.success).toBe(true);
 

@@ -42,7 +42,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ github.repository }}
     permissions:
@@ -55,7 +55,7 @@ jobs:
 
 ```yaml
 - name: Run CodeQL Analysis
-  uses: witmicko/security-code-scanner-monorepo/packages/codeql-action@main
+  uses: metamask/security-codescanner-monorepo/packages/codeql-action@main
   with:
     repo: ${{ github.repository }}
     language: javascript-typescript

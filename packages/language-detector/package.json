@@ -1,5 +1,5 @@
 {
-  "name": "@codescanner/language-detector",
+  "name": "@metamask/language-detector",
   "version": "1.0.0",
   "description": "Language detection and matrix generation for code scanning",
   "main": "src/index.js",

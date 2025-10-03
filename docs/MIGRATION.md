@@ -15,7 +15,7 @@ MetaMask/semgrep-action               →  Semgrep scanning
 ### After (Monorepo)
 
 ```
-witmicko/security-scanner-monorepo/
+metamask/security-codescanner-monorepo/
 ├── packages/main-action/      ←  Former action-security-code-scanner
 ├── packages/codeql-action/    ←  Former CodeQL-action
 └── packages/semgrep-action/   ←  Former semgrep-action
@@ -38,7 +38,7 @@ witmicko/security-scanner-monorepo/
 
 ```yaml
 - name: Security Code Scanner
-  uses: witmicko/security-scanner-monorepo/packages/main-action@v1
+  uses: metamask/security-codescanner-monorepo/packages/main-action@v1
   with:
     repo: ${{ github.repository }}
 ```
@@ -59,10 +59,10 @@ witmicko/security-scanner-monorepo/
 
 ```yaml
 # CodeQL
-- uses: witmicko/security-scanner-monorepo/packages/codeql-action@v1
+- uses: metamask/security-codescanner-monorepo/packages/codeql-action@v1
 
 # Semgrep
-- uses: witmicko/security-scanner-monorepo/packages/semgrep-action@v1
+- uses: metamask/security-codescanner-monorepo/packages/semgrep-action@v1
 ```
 
 ### 3. Reusable Workflows (New Feature)
@@ -72,7 +72,7 @@ witmicko/security-scanner-monorepo/
 ```yaml
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@v1
     with:
       repo: ${{ github.repository }}
       languages: '["javascript", "python"]'
@@ -147,7 +147,7 @@ Replace old references with new monorepo paths:
 uses: MetaMask/action-security-code-scanner@v1
 
 # With this:
-uses: witmicko/security-scanner-monorepo/packages/main-action@v1
+uses: metamask/security-codescanner-monorepo/packages/main-action@v1
 ```
 
 ### Step 3: Consider Reusable Workflows
@@ -167,12 +167,12 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: witmicko/security-scanner-monorepo/packages/main-action@v1
+      - uses: metamask/security-codescanner-monorepo/packages/main-action@v1
 
 # New approach (recommended)
 jobs:
   security-scan:
-    uses: witmicko/security-scanner-monorepo/.github/workflows/security-scan.yml@v1
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@v1
     with:
       repo: ${{ github.repository }}
       languages: '["javascript", "typescript"]'
@@ -211,13 +211,13 @@ Use these commands to help migrate your workflows:
 
 ```bash
 # Update main action references
-find .github -name "*.yml" -exec sed -i 's|MetaMask/action-security-code-scanner@v1|witmicko/security-scanner-monorepo/packages/main-action@v1|g' {} +
+find .github -name "*.yml" -exec sed -i 's|MetaMask/action-security-code-scanner@v1|metamask/security-codescanner-monorepo/packages/main-action@v1|g' {} +
 
 # Update CodeQL action references
-find .github -name "*.yml" -exec sed -i 's|MetaMask/CodeQL-action@main|witmicko/security-scanner-monorepo/packages/codeql-action@v1|g' {} +
+find .github -name "*.yml" -exec sed -i 's|MetaMask/CodeQL-action@main|metamask/security-codescanner-monorepo/packages/codeql-action@v1|g' {} +
 
 # Update Semgrep action references
-find .github -name "*.yml" -exec sed -i 's|MetaMask/Semgrep-action@main|witmicko/security-scanner-monorepo/packages/semgrep-action@v1|g' {} +
+find .github -name "*.yml" -exec sed -i 's|MetaMask/Semgrep-action@main|metamask/security-codescanner-monorepo/packages/semgrep-action@v1|g' {} +
 ```
 
 ### Validation Script
@@ -240,7 +240,7 @@ else
 fi
 
 echo "🔍 Checking for new action references..."
-NEW_REFS=$(grep -r "witmicko/security-scanner-monorepo" .github/ | wc -l)
+NEW_REFS=$(grep -r "metamask/security-codescanner-monorepo" .github/ | wc -l)
 if [ $NEW_REFS -gt 0 ]; then
   echo "✅ Found $NEW_REFS new action references"
 else

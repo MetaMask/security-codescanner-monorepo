@@ -7,7 +7,7 @@ on:
         description: 'Repository to test language detection on'
         required: true
         type: string
-        default: 'witmicko/lll'
+        default: 'consensys/linea-monorepo'
       languages_config:
         description: 'Custom language config (JSON)'
         required: false

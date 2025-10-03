@@ -50,19 +50,6 @@ yarn detect "owner/repo"
 yarn matrix '["javascript", "java"]' '[{"language":"java","build_mode":"manual"}]'
 ```
 
-### Test with Act (GitHub Actions locally)
-
-```bash
-# Test the full action
-act workflow_dispatch -W .github/workflows/test-language-detector.yml \
-  --input repo=witmicko/lll
-
-# Test with custom config
-act workflow_dispatch -W .github/workflows/test-language-detector.yml \
-  --input repo=witmicko/lll \
-  --input languages_config='[{"language":"java-kotlin","build_mode":"manual","build_command":"./gradlew build"}]'
-```
-
 ### Test in GitHub Actions
 
 Go to Actions → Test Language Detector → Run workflow

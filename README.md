@@ -23,7 +23,7 @@ on: [push, pull_request]
 
 jobs:
   security-scan:
-    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ github.repository }}
 ```
@@ -67,7 +67,7 @@ export default config;
 ```yaml
 jobs:
   security-scan:
-    uses: witmicko/security-code-scanner-monorepo/.github/workflows/security-scan.yml@main
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ github.repository }}
       languages_config: |
@@ -119,17 +119,17 @@ yarn lint:fix
 
 ```bash
 # Test language detector
-yarn workspace @codescanner/language-detector test
+yarn workspace @metamask/language-detector test
 
 # Test with integration tests
-yarn workspace @codescanner/language-detector test:integration
+yarn workspace @metamask/language-detector test:integration
 ```
 
 ### Workspace Commands
 
 ```bash
 # Run command in specific package
-yarn workspace @codescanner/language-detector <command>
+yarn workspace @metamask/language-detector <command>
 
 # Run command in all packages
 yarn workspaces foreach run <command>

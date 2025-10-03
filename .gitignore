@@ -1,3 +1,5 @@
+.actrc
+.env*
 # Dependencies
 node_modules/
 .pnp
