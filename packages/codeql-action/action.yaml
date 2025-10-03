@@ -44,13 +44,6 @@ runs:
         echo "=================================================================="
       shell: bash
 
-    - name: Checkout Custom Query Repository
-      id: checkout-custom-query
-      uses: actions/checkout@v4
-      with:
-        repository: metamask/CodeQL-Queries
-        ref: main
-        path: ${{ github.workspace }}/custom-queries
 
     - name: Enable Corepack
       run: corepack enable
@@ -72,11 +65,11 @@ runs:
       id: generate-config
       run: |
         # Install from monorepo directory where dependencies are defined
-        cd ${{ github.workspace }}/security-scanner-monorepo
+        cd ${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}
         yarn install --immutable
         # Run from workspace root where files are copied
         cd ${{ github.workspace }}
-        NODE_PATH=${{ github.workspace }}/security-scanner-monorepo/node_modules node scripts/generate-config.cjs
+        NODE_PATH=${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules node scripts/generate-config.cjs
       shell: bash
       env:
         REPO: ${{inputs.repo}}
@@ -107,6 +100,14 @@ runs:
         echo "This language has been configured with 'ignore: true' in the repository config."
         exit 1
       shell: bash
+
+    - name: Checkout Custom Query Repository
+          id: checkout-custom-query
+          uses: actions/checkout@v4
+          with:
+            repository: metamask/CodeQL-Queries
+            ref: main
+            path: ${{ github.workspace }}/custom-queries
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
