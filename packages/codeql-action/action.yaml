@@ -93,12 +93,12 @@ runs:
       shell: bash
 
     - name: Checkout Custom Query Repository
-          id: checkout-custom-query
-          uses: actions/checkout@v4
-          with:
-            repository: metamask/CodeQL-Queries
-            ref: main
-            path: ${{ github.workspace }}/custom-queries
+      id: checkout-custom-query
+      uses: actions/checkout@v4
+      with:
+        repository: metamask/CodeQL-Queries
+        ref: main
+        path: ${{ github.workspace }}/custom-queries
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
