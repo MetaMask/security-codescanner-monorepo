@@ -67,5 +67,5 @@ runs:
         LANGUAGES_CONFIG: ${{ inputs.languages_config }}
       run: |
         cd ${{ github.action_path }}
-        matrix=$(node src/language-detector.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
+        matrix=$(node src/job-configurator.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
         echo "matrix=$matrix" >> $GITHUB_OUTPUT
