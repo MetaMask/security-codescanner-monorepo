@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
  */
 export async function loadRepoConfig(repo, configDir = null) {
   try {
-    console.log(`Loading config for repository: ${repo}`);
+    console.error(`[config-loader] Loading config for repository: ${repo}`);
 
     const repoName = repo.split('/')[1];
 
@@ -23,28 +23,29 @@ export async function loadRepoConfig(repo, configDir = null) {
     const baseDir = configDir || path.join(__dirname, '..', 'repo-configs');
     const repoConfigPath = path.join(baseDir, `${repoName}.js`);
 
-    console.log(`Looking for config at: ${repoConfigPath}`);
+    console.error(`[config-loader] Looking for config at: ${repoConfigPath}`);
 
     if (!fs.existsSync(repoConfigPath)) {
-      console.warn(`No config found for "${repo}", using default config`);
+      console.error(`[config-loader] No config found for "${repo}", using default config`);
       const defaultConfigPath = path.join(baseDir, 'default.js');
 
       if (!fs.existsSync(defaultConfigPath)) {
-        console.error(`Default config not found at: ${defaultConfigPath}`);
+        console.error(`[config-loader] Default config not found at: ${defaultConfigPath}`);
         return getDefaultConfig();
       }
 
       const defaultModule = await import(`file://${defaultConfigPath}`);
+      console.error(`[config-loader] Successfully loaded default config`);
       return defaultModule.default;
     }
 
     const configModule = await import(`file://${repoConfigPath}`);
-    console.log(`Successfully loaded config for ${repo}`);
+    console.error(`[config-loader] Successfully loaded config for ${repo}`);
     return configModule.default;
 
   } catch (error) {
-    console.error(`Error loading config for "${repo}":`, error.message);
-    console.log('Falling back to default configuration');
+    console.error(`[config-loader] Error loading config for "${repo}":`, error.message);
+    console.error('[config-loader] Falling back to default configuration');
     return getDefaultConfig();
   }
 }

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Custom CodeQL analysis action",
+  "type": "module",
   "keywords": [],
   "repository": {
     "type": "git",
