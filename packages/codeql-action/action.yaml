@@ -104,7 +104,7 @@ runs:
       if: ${{ steps.generate-config.outputs.should_ignore == 'true' }}
       run: |
         echo "Language ${{ inputs.language }} is configured to be ignored. Cancelling CodeQL analysis."
-        gh run cancel ${{ github.run_id }}
+        gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
         exit 1
       shell: bash
       env:
