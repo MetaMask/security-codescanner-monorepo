@@ -49,27 +49,20 @@ runs:
       run: corepack enable
       shell: bash
 
-   
-    - name: Copy CodeQL Action Files to Workspace Root
+    - name: Copy Query Suites to Workspace Root
       run: |
-        echo "Copying CodeQL action files to workspace root for flat structure..."
+        echo "Copying query suites to workspace root for CodeQL..."
         cp -r ${{ github.action_path }}/query-suites ${{ github.workspace }}/
-        cp -r ${{ github.action_path }}/repo-configs ${{ github.workspace }}/
-        cp -r ${{ github.action_path }}/config ${{ github.workspace }}/
-        cp -r ${{ github.action_path }}/scripts ${{ github.workspace }}/
-        echo "Files copied. Workspace structure:"
-        ls -la ${{ github.workspace }}/
       shell: bash
 
     - name: Generate Config
       id: generate-config
       run: |
-        # Install from monorepo directory where dependencies are defined
+        # Install dependencies and run script from monorepo directory
         cd ${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}
         yarn install --immutable
-        # Run from workspace root where files are copied
-        cd ${{ github.workspace }}
-        NODE_PATH=${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules node scripts/generate-config.js
+        cd packages/codeql-action
+        node scripts/generate-config.js
       shell: bash
       env:
         REPO: ${{inputs.repo}}
@@ -93,12 +86,12 @@ runs:
       shell: bash
 
     - name: Checkout Custom Query Repository
-          id: checkout-custom-query
-          uses: actions/checkout@v4
-          with:
-            repository: metamask/CodeQL-Queries
-            ref: main
-            path: ${{ github.workspace }}/custom-queries
+      id: checkout-custom-query
+      uses: actions/checkout@v4
+      with:
+        repository: metamask/CodeQL-Queries
+        ref: main
+        path: ${{ github.workspace }}/custom-queries
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

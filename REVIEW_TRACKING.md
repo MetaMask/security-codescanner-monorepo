@@ -384,6 +384,14 @@ c6474e0 aa            # Non-descriptive
 - `packages/language-detector/src/job-configurator.js` (removed createRequire)
 - `packages/codeql-action/action.yaml` (updated script reference)
 
+**Runtime Fixes During ESM Migration:**
+1. **GITHUB_OUTPUT pollution**: Changed `console.log()` → `console.error()` in config-loader.js
+2. **YAML indentation**: Fixed 10-space to 6-space indentation in action.yaml line 96
+3. **ESM module resolution**: Created symlink to node_modules at workspace root
+   - ESM doesn't respect NODE_PATH like CommonJS
+   - Added: `ln -s ${MONOREPO_PATH}/node_modules workspace/node_modules`
+   - Allows copied scripts to resolve dependencies via symlink
+
 ---
 
 ### Architecture Refactoring: Single Source of Truth for Config (2025-10-03)
