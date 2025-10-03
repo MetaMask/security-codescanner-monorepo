@@ -107,6 +107,8 @@ runs:
         gh run cancel ${{ github.run_id }}
         exit 1
       shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
