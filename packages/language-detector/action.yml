@@ -65,7 +65,20 @@ runs:
       env:
         DETECTED_LANGUAGES: ${{ steps.detect.outputs.languages }}
         LANGUAGES_CONFIG: ${{ inputs.languages_config }}
+        REPO: ${{ inputs.repo }}
       run: |
         cd ${{ github.action_path }}
-        matrix=$(node src/job-configurator.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
+        # Pass repo and config directory to enable file-based config loading
+        # Try common monorepo paths
+        MONOREPO_PATH="${MONOREPO_PATH:-.security-scanner}"
+        CONFIG_DIR="${{ github.workspace }}/${MONOREPO_PATH}/packages/codeql-action/repo-configs"
+
+        echo "Looking for repo configs at: $CONFIG_DIR"
+        if [ -d "$CONFIG_DIR" ]; then
+          echo "Found config directory, will load repo-specific config"
+          matrix=$(node src/job-configurator.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG" "$REPO" "$CONFIG_DIR")
+        else
+          echo "Config directory not found, using workflow input only"
+          matrix=$(node src/job-configurator.js "$DETECTED_LANGUAGES" "$LANGUAGES_CONFIG")
+        fi
         echo "matrix=$matrix" >> $GITHUB_OUTPUT

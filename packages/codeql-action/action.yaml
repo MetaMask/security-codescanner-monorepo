@@ -69,7 +69,7 @@ runs:
         yarn install --immutable
         # Run from workspace root where files are copied
         cd ${{ github.workspace }}
-        NODE_PATH=${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules node scripts/generate-config.cjs
+        NODE_PATH=${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules node scripts/generate-config.js
       shell: bash
       env:
         REPO: ${{inputs.repo}}
@@ -85,20 +85,11 @@ runs:
         echo "Build command: ${{ steps.generate-config.outputs.build_command }}"
         echo "Version: ${{ steps.generate-config.outputs.version }}"
         echo "Distribution: ${{ steps.generate-config.outputs.distribution }}"
-        echo "Should ignore: ${{ steps.generate-config.outputs.should_ignore }}"
         echo "=============================================================="
         echo ""
         echo "================= GENERATED CODEQL CONFIG FILE ================="
         cat ${{ github.workspace }}/codeql-config-generated.yml
         echo "=================================================================="
-      shell: bash
-
-    - name: Check if Language Should Be Ignored
-      if: ${{ steps.generate-config.outputs.should_ignore == 'true' }}
-      run: |
-        echo "Language ${{ inputs.language }} is configured to be ignored. Skipping CodeQL analysis."
-        echo "This language has been configured with 'ignore: true' in the repository config."
-        exit 1
       shell: bash
 
     - name: Checkout Custom Query Repository
