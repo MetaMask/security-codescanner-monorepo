@@ -83,6 +83,21 @@ jobs:
       rules_excluded: 'js/log-injection,py/sql-injection'
 ```
 
+### Testing from Dev Branch
+
+When testing changes to the security scanner itself from a dev branch, you must explicitly pass the `ref` input:
+
+```yaml
+jobs:
+  security-scan:
+    uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@dev-branch
+    with:
+      repo: ${{ github.repository }}
+      ref: dev-branch  # Must explicitly pass the branch name
+```
+
+**Note**: The `@branch` in the `uses:` statement only affects which workflow file is used. The `ref` input ensures all internal monorepo checkouts use the same branch.
+
 ## 📦 Package Structure
 
 ```
