@@ -9,7 +9,6 @@
   },
   "license": "ISC",
   "author": "witmicko",
-  "type": "module",
   "workspaces": [
     "packages/*"
   ],
