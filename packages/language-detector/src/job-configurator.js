@@ -41,34 +41,25 @@ const DEFAULT_CONFIGS = {
  */
 export function detectLanguages(githubLanguages) {
   if (!githubLanguages || typeof githubLanguages !== 'object') {
-    console.warn('⚠️  Invalid GitHub languages data, defaulting to javascript');
+    console.warn('Invalid GitHub languages data, defaulting to javascript');
     return ['javascript'];
   }
 
   const detectedLanguages = new Set();
 
-  for (const [githubLang, bytes] of Object.entries(githubLanguages)) {
+  for (const [githubLang] of Object.entries(githubLanguages)) {
     const scannerLang = LANGUAGE_MAPPING[githubLang];
     if (scannerLang) {
-      console.error(`✓ Found ${githubLang} (${bytes} bytes) - adding '${scannerLang}' for detection`);
       detectedLanguages.add(scannerLang);
     }
-  }
-
-  // Note Solidity for Semgrep
-  if (githubLanguages['Solidity']) {
-    console.error('Detected Solidity - will be scanned by Semgrep');
   }
 
   const languages = Array.from(detectedLanguages);
 
   if (languages.length === 0) {
-    console.warn('⚠️  No supported languages detected, defaulting to javascript');
+    console.warn('No supported languages detected, defaulting to javascript');
     return ['javascript'];
   }
-
-  console.error(`Language detection summary: Found ${languages.length} languages for analysis`);
-  console.error(`Languages to scan: ${languages.join(', ')}`);
 
   return languages;
 }
@@ -120,16 +111,13 @@ export function createMatrix(detectedLanguages, languagesConfig = []) {
       const mergedConfig = { ...defaultConfig, ...customConfig };
       // Remove ignore property from final config as it's only for control flow
       delete mergedConfig.ignore;
-      console.error(`✓ ${lang} detected - using merged config:`, mergedConfig);
       matrixIncludes.push(mergedConfig);
     } else if (customConfig) {
       // Remove ignore property from final config as it's only for control flow
       const finalConfig = { ...customConfig };
       delete finalConfig.ignore;
-      console.error(`✓ ${lang} detected - using provided config:`, finalConfig);
       matrixIncludes.push(finalConfig);
     } else if (defaultConfig) {
-      console.error(`✓ ${lang} detected - using default config:`, defaultConfig);
       matrixIncludes.push(defaultConfig);
     }
   }
@@ -138,7 +126,6 @@ export function createMatrix(detectedLanguages, languagesConfig = []) {
   const seenLanguages = new Set();
   const uniqueMatrixIncludes = matrixIncludes.filter(entry => {
     if (seenLanguages.has(entry.language)) {
-      console.error(`⚠️  Skipping duplicate matrix entry for language: ${entry.language}`);
       return false;
     }
     seenLanguages.add(entry.language);
@@ -171,16 +158,9 @@ async function main() {
 
     // Load repo-specific config from file if repo and configDir are provided
     if (repo && configDir) {
-      console.error(`=== LOADING REPO CONFIG ===`);
-      console.error(`Repository: ${repo}`);
-      console.error(`Config directory: ${configDir}`);
-
       // Use shared config loader from codeql-action package
       const repoConfig = await loadRepoConfig(repo, configDir);
       const fileLanguagesConfig = repoConfig.languages_config || [];
-
-      console.error(`File-based languages_config:`, fileLanguagesConfig);
-      console.error(`Workflow input languages_config:`, languagesConfig);
 
       // Merge configs: workflow input takes precedence over file config
       // Create a map of file configs by language
@@ -208,17 +188,13 @@ async function main() {
           const mergedConfig = { ...fileConfig, ...inputConfig };
           const index = mergedConfigs.findIndex(c => c.language === lang);
           mergedConfigs[index] = mergedConfig;
-          console.error(`✓ Merged config for ${lang}:`, mergedConfig);
         } else {
           // New language only in workflow input
           mergedConfigs.push(inputConfig);
-          console.error(`✓ Added workflow-only config for ${lang}:`, inputConfig);
         }
       }
 
       languagesConfig = mergedConfigs;
-      console.error(`Final merged languages_config:`, languagesConfig);
-      console.error(`===========================`);
     }
 
     // Handle both GitHub API format (object) and pre-processed array
