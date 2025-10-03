@@ -97,7 +97,7 @@ cd ${{ github.workspace }}/security-scanner-monorepo  # ❌ Hardcoded!
 
 ### 4. Legacy Code Cleanup
 **Files:** `current-codeql-setup/`, duplicate `lll.js` configs
-**Status:** 🔴 Open
+**Status:** ✅ Complete
 **Severity:** High
 
 **Problem:**
@@ -107,13 +107,11 @@ cd ${{ github.workspace }}/security-scanner-monorepo  # ❌ Hardcoded!
 
 **Impact:** Maintenance confusion, potential for using wrong config
 
-**Solution:**
-- Remove `current-codeql-setup/` if truly legacy
-- Or add README explaining its purpose
-- Consolidate to single source of truth
+**Solution Implemented:**
+- Removed `current-codeql-setup/` directory
+- Single source of truth: `packages/codeql-action/repo-configs/`
 
-**Assignee:** _________
-**Due Date:** _________
+**Completed:** 2025-10-03
 
 ---
 
@@ -160,7 +158,7 @@ appendFileSync(outputFile, output);
 
 ### 6. Unpinned Custom Query Repository
 **File:** `packages/codeql-action/action.yaml:109`
-**Status:** 🟡 Open
+**Status:** ✅ Resolved - Won't Fix
 **Severity:** Medium
 
 **Problem:**
@@ -170,14 +168,13 @@ ref: main  # ❌ Unstable - any push to main changes behavior
 
 **Impact:** Non-reproducible builds, unexpected query changes
 
-**Solution:**
-```yaml
-ref: abc123def456...  # ✅ Pin to specific SHA
-# Or use tagged release: v1.2.3
-```
+**Resolution:**
+- This is the team's own repository (metamask/CodeQL-Queries)
+- Release process will be implemented for the queries repo
+- Using `main` is intentional for latest queries
+- Not a concern for internal tooling
 
-**Assignee:** _________
-**Due Date:** _________
+**Resolved:** 2025-10-03
 
 ---
 
@@ -222,7 +219,7 @@ const loadConfig = (repo) => {
 
 ### 8. Config File Format Standardization
 **Files:** `packages/codeql-action/repo-configs/`
-**Status:** 🟡 Open
+**Status:** ✅ Complete
 **Severity:** Medium
 
 **Problem:**
@@ -232,13 +229,16 @@ const loadConfig = (repo) => {
 
 **Impact:** Confusion, potential import issues
 
-**Solution:**
-- Choose one format: `.cjs` for CommonJS or `.mjs` for ESM
-- Convert all configs to same format
-- Update all require/import statements
+**Solution Implemented:**
+- Standardized on `.cjs` extension for all CommonJS config files
+- Renamed `lll.js` → `lll.cjs`
+- Updated `generate-config.cjs` to load `.cjs` files (line 30)
+- All repo configs now consistently use `.cjs` extension
 
-**Assignee:** _________
-**Due Date:** _________
+**Completed:** 2025-10-03
+**Files Changed:**
+- `packages/codeql-action/repo-configs/lll.js` → `lll.cjs`
+- `packages/codeql-action/scripts/generate-config.cjs`
 
 ---
 
@@ -382,13 +382,13 @@ c6474e0 aa            # Non-descriptive
 - [ ] Issue #1: Fix Module System Inconsistency
 - [x] Issue #2: Remove Hardcoded Repository Path ✅
 - [ ] Issue #3: Add Tests for CodeQL Action
-- [ ] Issue #4: Clean Up Legacy Code
+- [x] Issue #4: Clean Up Legacy Code ✅
 - [ ] Issue #5: Add Input Validation & Sanitization
 
 ### Sprint 2 (Medium Priority)
-- [ ] Issue #6: Pin Custom Query Repository
+- [x] Issue #6: Pin Custom Query Repository ✅ (Won't Fix - Intentional)
 - [ ] Issue #7: Improve Error Handling
-- [ ] Issue #8: Standardize Config File Format
+- [x] Issue #8: Standardize Config File Format ✅
 - [ ] Issue #9: Update Documentation
 - [ ] Issue #10: Fix Workflow Context Issues
 
@@ -404,8 +404,8 @@ c6474e0 aa            # Non-descriptive
 ### Current State
 - **Test Coverage:** ~33% (1 of 3 packages has tests)
 - **Documentation Coverage:** ~60% (exists but outdated)
-- **Critical Issues:** 4 (1 completed)
-- **Medium Issues:** 5
+- **Critical Issues:** 3 (2 completed)
+- **Medium Issues:** 3 (2 completed, 1 resolved)
 - **Low Issues:** 3
 
 ### Target State
