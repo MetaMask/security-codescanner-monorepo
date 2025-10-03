@@ -18,6 +18,8 @@ jobs:
     uses: metamask/security-codescanner-monorepo/.github/workflows/security-scan.yml@main
     with:
       repo: ${{ inputs.target_repo || github.repository }}
+      # Uncomment to test from a dev branch:
+      # ref: monorepoed
       # languages_config: '' # Leave empty for auto-detection with repo defaults
       # Example with custom Java build:
       # languages_config: |
