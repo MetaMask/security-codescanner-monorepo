@@ -67,9 +67,11 @@ runs:
         # Install from monorepo directory where dependencies are defined
         cd ${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}
         yarn install --immutable
+        # Create symlink to node_modules for ESM resolution
+        ln -s ${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules ${{ github.workspace }}/node_modules
         # Run from workspace root where files are copied
         cd ${{ github.workspace }}
-        NODE_PATH=${{ github.workspace }}/${MONOREPO_PATH:-.security-scanner}/node_modules node scripts/generate-config.js
+        node scripts/generate-config.js
       shell: bash
       env:
         REPO: ${{inputs.repo}}
